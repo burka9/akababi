@@ -1,7 +1,0 @@
-.env
-.vscode/
-dist/
-node_modules/
-uploads/
-
-src.zip

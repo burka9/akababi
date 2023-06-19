@@ -1,53 +1,73 @@
-import { IsEmail } from "class-validator";
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
-import { Post } from "../post/post.entity";
-import { PostComment } from "../post/post.comment.entity";
-import { PostReaction } from "../post/post.reaction.entity";
-import { UserProfile } from "./user.profile.entity";
-import { PrivacySetting } from "./user.privacy.entity";
-import { UserFollower } from "./user.follower.entity";
+import { Column, CreateDateColumn, Entity, JoinColumn, OneToMany, OneToOne, PrimaryColumn } from "typeorm";
+import { UserProfile } from "./user_profile.entity";
+import { UserAudioCategory } from "./user_audio_category.entity";
+import { UserPictureCategory } from "./user_picture_category.entity";
+import { UserVideoCategory } from "./user_video_category.entity";
 
 @Entity()
 export class User {
-	@Column({ primary: true })
+	@PrimaryColumn({
+		name: "user_id"
+	})
 	sub: string;
 
-	@CreateDateColumn()
+	@CreateDateColumn({
+		name: "created_at"
+	})
 	createdAt: Date;
 
-	@Column({ unique: true })
-	@IsEmail()
+	@Column({
+		unique: true
+	})
 	email: string;
+
+	@Column({
+		unique: true,
+		nullable: true
+	})
+	phone: string;
 
 	@Column({
 		type: "geometry",
 		spatialFeatureType: "Point",
 		srid: 4326,
-		select: false,
-		nullable: true
+		nullable: true,
+		transformer: {
+			from(value: string) {
+				const [longitude, latitude] = value.substring(6, value.length-1).split(" ")
+				return { longitude, latitude }
+			},
+			to({ longitude, latitude }: { longitude: number, latitude: number}) {
+				return `POINT(${longitude} ${latitude})`
+			},
+		},
 	})
-	location: string;
+	location: { longitude: number, latitude: number};
 
-	@OneToMany(() => Post, post => post.user)
-	posts: Post[];
 
-	@OneToMany(() => PostComment, postComment => postComment.user)
-	comments: PostComment[];
-
-	@ManyToOne(() => PostReaction, postReaction => postReaction.user)
-	postReaction: PostReaction;
-
-	@OneToOne(() => UserProfile, { cascade: true })
-	@JoinColumn()
+	/**
+	 * Relations
+	 */
+	@OneToOne(() => UserProfile, {
+		cascade: true
+	})
+	@JoinColumn({
+		name: "user_profile_id"
+	})
 	profile: UserProfile;
 
-	@OneToOne(() => PrivacySetting, { cascade: true })
-	@JoinColumn()
-	privacy: PrivacySetting;
+	@OneToMany(() => UserAudioCategory, userAudioCategory => userAudioCategory.user, {
+		cascade: ["insert"]
+	})
+	audioCategories: UserAudioCategory[];
 
-	@OneToMany(() => UserFollower, userFollower => userFollower.follower)
-	following: UserFollower[];
+	@OneToMany(() => UserPictureCategory, userPictureCategory => userPictureCategory.user, {
+		cascade: ["insert"]
+	})
+	pictureCategories: UserPictureCategory[];
 
-	@OneToMany(() => UserFollower, userFollower => userFollower.following)
-	followers: UserFollower[];
+	@OneToMany(() => UserVideoCategory, userVideoCategory => userVideoCategory.user, {
+		cascade: ["insert"]
+	})
+	videoCategories: UserVideoCategory[];
 }

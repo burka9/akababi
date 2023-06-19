@@ -1,21 +1,16 @@
 import express from 'express'
+import 'express-async-errors'
 import helmet from 'helmet'
 import { createServer } from 'http'
 import morgan from 'morgan'
 import cors from 'cors'
-import { DATABASE, DEVELOPMENT, SERVER } from './lib/env'
+import { DEVELOPMENT, SERVER } from './lib/env'
 import logger from './lib/logger'
 import { RouteConfig } from './lib/route.config'
-import { Debug, IncludeLocation, errorHandler } from './middleware'
+import { errorHandler } from './middleware'
 import { Database } from './database'
-import UserRoutes from './routes/user.routes'
-import PostRoutes from './routes/post/post.route'
-import loadData from './lib/loadData'
-import CategoryRoutes from './routes/category.route'
-import { existsSync, mkdirSync, rmSync } from 'fs'
-import ReactionRoutes from './routes/reaction.route'
-import 'express-async-errors'
-import DiscoverRoutes from './routes/discover.route'
+import { User } from './entity/user/user.entity'
+import { UserController } from './controller/user'
 
 const routes: Array<RouteConfig> = []
 
@@ -35,21 +30,15 @@ app.use(morgan('combined', {
 }))
 
 
-// static assets
-app.use("/assets", express.static("uploads"))
-
-// middleware
-app.use(IncludeLocation)
-app.use(Debug)
-
 // routes configuration
-routes.push(new ReactionRoutes(app))
-routes.push(new CategoryRoutes(app))
-routes.push(new UserRoutes(app))
-routes.push(new PostRoutes(app))
-routes.push(new DiscoverRoutes(app))
 
+
+
+// async error handler
 app.use(errorHandler)
+
+
+
 
 // server configuration
 const server = createServer(app)
@@ -77,23 +66,46 @@ const SERVER_ERROR = (err: any) => {
 
 // database configuration
 Database.initialize()
-	.then(() => {
+	.then(async () => {
 		logger.info('database connected')
 
 		server
 			.listen(SERVER.PORT, SERVER.HOST, SERVER_CALLBACK)
 			.on('error', SERVER_ERROR)
 
-		loadData()
+		if (DEVELOPMENT) {
+			try {
+				let sub = Math.random().toString()
+				
+				await UserController.CreateNewUser({
+					email: "user_1@email.com",
+					phone: "123456",
+					sub,
+					location: {
+						longitude: 10.2,
+						latitude: 10.2,
+					},
+				} as User)
 
-		if (DEVELOPMENT && DATABASE.DROP_SCHEMA) {
-			rmSync('uploads', {
-				recursive: true
-			})
+				let theuser = await UserController.FindUserBySub(sub)
+				console.log(theuser)
+				sub = Math.random().toString()
+
+				await UserController.CreateNewUser({
+					email: "user_2@email.com",
+					phone: "123123",
+					sub,
+					location: {
+						longitude: 1.2,
+						latitude: 1.2,
+					},
+				} as User)
+
+				theuser = await UserController.FindUserBySub(sub)
+				console.log(theuser)
+			} catch {
+			}
 		}
-		
-		// create folder for uploads
-		!existsSync('uploads') && mkdirSync('uploads')
 	})
 	.catch(err => {
 		logger.error(err.toString())

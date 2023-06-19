@@ -1,7 +1,10 @@
 import dotenv from 'dotenv'
 import { LoggerOptions } from 'typeorm/logger/LoggerOptions'
+import { base64ToString } from './string'
 
 dotenv.config()
+
+const DB_BASE64_ENCODE = process.env.DB_BASE64_ENCODE === "true"
 
 export const DEVELOPMENT = process.env.ENVIRONMENT?.toUpperCase() === 'DEVELOPMENT'
 export const ENVIRONMENT = process.env.ENVIRONMENT
@@ -25,28 +28,37 @@ function getDatabaseLogs(): LoggerOptions {
 	let logs
 
 	try {
-		logs = (process.env.DB_LOG as string).trim().split(',')
-		logs.forEach(log => log = log.trim())
+		logs = (process.env.DB_LOG as string).trim().split(',').map(log => log = log.trim())
 	} catch { }
 
 	return (logs || defaultLogs) as LoggerOptions
 }
 
-export type CustomDatabaseType = 'mysql' | 'mariadb' | 'postgres'
+
+export type CustomDatabaseType = 'mysql' | 'mariadb' | 'postgres' | 'mongodb' | 'oracle'
 
 function getDatabaseType(): CustomDatabaseType {
-	const types = ['mysql', 'mariadb', 'postgres']
+	return (['mysql', 'mariadb', 'postgres', 'mongodb', 'oracle']
+		.find(type => type === process.env.DB_TYPE) || 'mysql') as CustomDatabaseType
+}
 
-	return (types.find(type => type === process.env.DB_TYPE) || types[0]) as CustomDatabaseType
+function getDatabaseName(): string {
+	return DB_BASE64_ENCODE ? base64ToString(process.env.DB_NAME || 'YmFja2VuZA==') : (process.env.DB_NAME || 'backend')
+}
+function getDatabaseUser(): string {
+	return DB_BASE64_ENCODE ? base64ToString(process.env.DB_USER || 'cm9vdA==') : (process.env.DB_USER || 'root')
+}
+function getDatabasePassword(): string {
+	return DB_BASE64_ENCODE ? base64ToString(process.env.DB_PASSWORD || '') : (process.env.DB_PASSWORD || '')
 }
 
 export const DATABASE = {
 	TYPE: getDatabaseType(),
-	HOST: process.env.DB_HOST || 'localhost',
+	HOST: process.env.DB_HOST || '127.0.0.1',
 	PORT: Number(process.env.DB_PORT || '3306'),
-	NAME: process.env.DB_NAME || 'akababi',
-	USER: process.env.DB_USER || 'root',
-	PASSWORD: process.env.DB_PASSWORD || '',
+	NAME: getDatabaseName(),
+	USER: getDatabaseUser(),
+	PASSWORD: getDatabasePassword(),
 	MIN_POOL: Number(process.env.DB_MIN_POOL || 1),
 	MAX_POOL: Number(process.env.DB_MAX_POOL || 4),
 	LOG: getDatabaseLogs(),
