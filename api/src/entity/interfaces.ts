@@ -263,6 +263,7 @@ export interface _Message {
 	created_at: Date;
 
 	text_message: string;
+	picture_message: string;
 	audio_message: string;
 	video_message: string;
 

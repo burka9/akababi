@@ -1,14 +1,7 @@
 import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { User } from "./user.entity";
 import { ProfilePicture } from "./profile_picture.entity";
-
-export enum MaritalStatus {
-	Single = "Single",
-	InARelationship = "InARelationship",
-	Married = "Married",
-	Divorced = "Divorced",
-	Widow = "Wirdow",
-}
+import { MaritalStatus, Privacy } from "..";
 
 @Entity()
 export class UserProfile {
@@ -52,6 +45,13 @@ export class UserProfile {
 		name: "is_a_new_user"
 	})
 	newUser: boolean;
+
+	@Column({
+		type: "enum",
+		enum: Privacy,
+		default: Privacy.Everyone
+	})
+	privacy: Privacy;
 
 
 	/**

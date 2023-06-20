@@ -1,5 +1,5 @@
 import { Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from "typeorm";
-import { UserMultimedia } from "./user_multimedia";
+import { UserMultimedia } from "./helper/user_multimedia";
 import { UserPictureCategory } from "./user_picture_category.entity";
 import { ProfilePicture } from "./profile_picture.entity";
 

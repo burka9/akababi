@@ -1,5 +1,5 @@
 import { Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { UserMultimedia } from "./user_multimedia";
+import { UserMultimedia } from "./helper/user_multimedia";
 import { UserAudioCategory } from "./user_audio_category.entity";
 
 @Entity()

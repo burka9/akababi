@@ -2,9 +2,13 @@ import { Entity, PrimaryColumn } from "typeorm";
 
 @Entity()
 export class UserFollower {
-	@PrimaryColumn()
+	@PrimaryColumn({
+		name: "follower_id"
+	})
 	follower: string;
 
-	@PrimaryColumn()
+	@PrimaryColumn({
+		name: "following_id"
+	})
 	following: string;
 }

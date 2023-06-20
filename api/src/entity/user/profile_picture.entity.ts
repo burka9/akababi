@@ -1,6 +1,8 @@
-import { Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { UserProfile } from "./user_profile.entity";
 import { UserPicture } from "./user_picture.entity";
+import { Privacy } from "..";
+import { User } from "./user.entity";
 
 @Entity()
 export class ProfilePicture {
@@ -8,6 +10,13 @@ export class ProfilePicture {
 		name: "profile_picture_id"
 	})
 	id: number;
+
+	@Column({
+		type: "enum",
+		enum: Privacy,
+		default: Privacy.Everyone
+	})
+	privacy: Privacy;
 
 
 	/**
@@ -24,4 +33,7 @@ export class ProfilePicture {
 		name: "user_picture_id"
 	})
 	picture: UserPicture;
+
+	@OneToOne(() => User)
+	user: User;
 }

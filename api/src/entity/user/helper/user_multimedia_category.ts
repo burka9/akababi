@@ -1,6 +1,7 @@
 import { CreateDateColumn, Column } from "typeorm";
+import { Privacy } from "../..";
 
-export class UserMultimediaCategory {
+export abstract class UserMultimediaCategory {
 	constructor(name: string) {
 		this.name = name
 	}
@@ -12,4 +13,11 @@ export class UserMultimediaCategory {
 
 	@Column()
 	name: string;
+
+	@Column({
+		type: "enum",
+		enum: Privacy,
+		default: Privacy.Everyone
+	})
+	privacy: Privacy;
 }

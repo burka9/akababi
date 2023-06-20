@@ -1,6 +1,6 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { User } from "./user.entity";
-import { UserMultimediaCategory } from "./user_multimedia_category";
+import { UserMultimediaCategory } from "./helper/user_multimedia_category";
 import { UserVideo } from "./user_video.entity";
 
 @Entity()

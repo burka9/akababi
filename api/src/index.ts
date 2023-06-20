@@ -72,40 +72,6 @@ Database.initialize()
 		server
 			.listen(SERVER.PORT, SERVER.HOST, SERVER_CALLBACK)
 			.on('error', SERVER_ERROR)
-
-		if (DEVELOPMENT) {
-			try {
-				let sub = Math.random().toString()
-				
-				await UserController.CreateNewUser({
-					email: "user_1@email.com",
-					phone: "123456",
-					sub,
-					location: {
-						longitude: 10.2,
-						latitude: 10.2,
-					},
-				} as User)
-
-				let theuser = await UserController.FindUserBySub(sub)
-				console.log(theuser)
-				sub = Math.random().toString()
-
-				await UserController.CreateNewUser({
-					email: "user_2@email.com",
-					phone: "123123",
-					sub,
-					location: {
-						longitude: 1.2,
-						latitude: 1.2,
-					},
-				} as User)
-
-				theuser = await UserController.FindUserBySub(sub)
-				console.log(theuser)
-			} catch {
-			}
-		}
 	})
 	.catch(err => {
 		logger.error(err.toString())
