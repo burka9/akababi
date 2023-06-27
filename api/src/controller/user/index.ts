@@ -20,6 +20,7 @@ export class UserController {
 	static async CreateNewUser(user: User): Promise<User> {
 		user.profile = new UserProfile()
 		user.profile.profilePicture = new ProfilePicture()
+		user.profilePicture = new ProfilePicture()
 		user.audioCategories = DEFAULT_CATEGORIES.audio.map(category => new UserAudioCategory(category))
 		user.pictureCategories = DEFAULT_CATEGORIES.pictures.map(category => new UserPictureCategory(category))
 		user.videoCategories = DEFAULT_CATEGORIES.videos.map(category => new UserVideoCategory(category))

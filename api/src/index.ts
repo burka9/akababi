@@ -4,13 +4,11 @@ import helmet from 'helmet'
 import { createServer } from 'http'
 import morgan from 'morgan'
 import cors from 'cors'
-import { DEVELOPMENT, SERVER } from './lib/env'
+import { SERVER } from './lib/env'
 import logger from './lib/logger'
 import { RouteConfig } from './lib/route.config'
 import { errorHandler } from './middleware'
 import { Database } from './database'
-import { User } from './entity/user/user.entity'
-import { UserController } from './controller/user'
 
 const routes: Array<RouteConfig> = []
 

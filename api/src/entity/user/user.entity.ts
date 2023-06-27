@@ -3,7 +3,7 @@ import { UserProfile } from "./user_profile.entity";
 import { UserAudioCategory } from "./user_audio_category.entity";
 import { UserPictureCategory } from "./user_picture_category.entity";
 import { UserVideoCategory } from "./user_video_category.entity";
-import { LocationOptions, LocationType } from "..";
+import { LocationOptions, LocationType, Privacy } from "..";
 import { PostComment } from "../post/post_comment.entity";
 import { Post } from "../post/post.entity";
 import { PostReaction } from "../post/post_reaction.entity";
@@ -39,13 +39,23 @@ export class User {
 	phone: string;
 
 	@Column(LocationOptions)
-	location: LocationType
+	location: LocationType;
+
+	@Column({
+		name: "online_status_privacy",
+		type: "enum",
+		enum: Privacy,
+		default: Privacy.Everyone,
+	})
+	onlineStatusPrivacy: Privacy;
 
 
 	/**
 	 * Relations
 	 */
-	@OneToOne(() => ProfilePicture)
+	@OneToOne(() => ProfilePicture, {
+		cascade: true
+	})
 	@JoinColumn({
 		name: "profile_picture_id"
 	})

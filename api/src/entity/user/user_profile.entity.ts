@@ -47,11 +47,12 @@ export class UserProfile {
 	newUser: boolean;
 
 	@Column({
+		name: "profile_privacy",
 		type: "enum",
 		enum: Privacy,
 		default: Privacy.Everyone
 	})
-	privacy: Privacy;
+	profilPrivacy: Privacy;
 
 
 	/**

@@ -11,3 +11,4 @@ export function errorHandler(error: Error | CustomError, req: Request, res: Resp
 	}
 	return res.status(500).json({ message: 'Server error' })
 }
+
