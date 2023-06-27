@@ -7,7 +7,7 @@ import cors from 'cors'
 import { SERVER } from './lib/env'
 import logger from './lib/logger'
 import { RouteConfig } from './lib/route.config'
-import { errorHandler } from './middleware'
+import { errorHandler } from './middleware/error_handler'
 import { Database } from './database'
 
 const routes: Array<RouteConfig> = []
