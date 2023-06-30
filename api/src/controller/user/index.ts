@@ -1,36 +1,22 @@
+import { Request, Response } from "express"
 import { Database } from "../../database"
-import { ProfilePicture } from "../../entity/user/profile_picture.entity"
 import { User } from "../../entity/user/user.entity"
-import { UserAudioCategory } from "../../entity/user/user_audio_category.entity"
-import { UserPictureCategory } from "../../entity/user/user_picture_category.entity"
-import { UserProfile } from "../../entity/user/user_profile.entity"
-import { UserVideoCategory } from "../../entity/user/user_video_category.entity"
+import { badRequest, goodRequest } from "../../lib/response"
 
 export const userRepo = Database.getRepository(User)
 
 
-const DEFAULT_CATEGORIES = {
+export const DEFAULT_CATEGORIES = {
 	audio: ["My Voice Notes"],
-	pictures: ["My Pcitures"],
+	pictures: ["My Pictures"],
 	videos: ["My Videos"],
 }
 
 
-export class UserController {
-	static async CreateNewUser(user: User): Promise<User> {
-		user.profile = new UserProfile()
-		user.profile.profilePicture = new ProfilePicture()
-		user.profilePicture = new ProfilePicture()
-		user.audioCategories = DEFAULT_CATEGORIES.audio.map(category => new UserAudioCategory(category))
-		user.pictureCategories = DEFAULT_CATEGORIES.pictures.map(category => new UserPictureCategory(category))
-		user.videoCategories = DEFAULT_CATEGORIES.videos.map(category => new UserVideoCategory(category))
-
-		return userRepo.save(user)
-	}
-
-	static async FindUserBySub(sub: string): Promise<User | null> {
-		return userRepo.findOne({
-			where: { sub }
-		})
+class UserController {
+	async isNewUser(req: Request, res: Response) {
+		return (res.locals.user as User).profile.newUser ? goodRequest(res) : badRequest(res)
 	}
 }
+
+export default new UserController()

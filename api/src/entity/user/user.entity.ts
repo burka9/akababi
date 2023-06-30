@@ -1,4 +1,4 @@
-import { Column, CreateDateColumn, Entity, Generated, JoinColumn, OneToMany, OneToOne, PrimaryColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinColumn, OneToMany, OneToOne, PrimaryColumn } from "typeorm";
 import { UserProfile } from "./user_profile.entity";
 import { UserAudioCategory } from "./user_audio_category.entity";
 import { UserPictureCategory } from "./user_picture_category.entity";
@@ -19,7 +19,6 @@ export class User {
 	@PrimaryColumn({
 		name: "user_id"
 	})
-	@Generated("uuid")
 	sub: string;
 
 	@CreateDateColumn({
@@ -53,14 +52,6 @@ export class User {
 	/**
 	 * Relations
 	 */
-	@OneToOne(() => ProfilePicture, {
-		cascade: true
-	})
-	@JoinColumn({
-		name: "profile_picture_id"
-	})
-	profilePicture: ProfilePicture;
-	
 	@OneToOne(() => UserProfile, {
 		cascade: true
 	})

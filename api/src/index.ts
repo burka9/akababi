@@ -9,6 +9,7 @@ import logger from './lib/logger'
 import { RouteConfig } from './lib/route.config'
 import { errorHandler } from './middleware/error_handler'
 import { Database } from './database'
+import MiscRoute from './routes/misc.route'
 
 const routes: Array<RouteConfig> = []
 
@@ -29,6 +30,7 @@ app.use(morgan('combined', {
 
 
 // routes configuration
+routes.push(new MiscRoute(app))
 
 
 
@@ -66,7 +68,7 @@ const SERVER_ERROR = (err: any) => {
 Database.initialize()
 	.then(async () => {
 		logger.info('database connected')
-
+		
 		server
 			.listen(SERVER.PORT, SERVER.HOST, SERVER_CALLBACK)
 			.on('error', SERVER_ERROR)

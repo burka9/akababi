@@ -52,7 +52,7 @@ export class UserProfile {
 		enum: Privacy,
 		default: Privacy.Everyone
 	})
-	profilPrivacy: Privacy;
+	profilePrivacy: Privacy;
 
 
 	/**

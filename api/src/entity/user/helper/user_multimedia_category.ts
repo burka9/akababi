@@ -11,7 +11,9 @@ export abstract class UserMultimediaCategory {
 	})
 	createdAt: Date;
 
-	@Column()
+	@Column({
+		unique: true
+	})
 	name: string;
 
 	@Column({

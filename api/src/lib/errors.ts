@@ -23,6 +23,18 @@ export class Unauthorized extends error {
 
 export class BadRequest extends error {
 	constructor() {
-		super("Bad Request", 400)
+		super("Bad Request")
+	}
+}
+
+export class NoLocation extends error {
+	constructor() {
+		super("No Location")
+	}
+}
+
+export class NoItem extends error {
+	constructor() {
+		super("Mo Item Found")
 	}
 }

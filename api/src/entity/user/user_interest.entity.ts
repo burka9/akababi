@@ -5,7 +5,7 @@ export class UserInterest {
 	@PrimaryColumn({
 		name: "user_profile_id"
 	})
-	profile: string;
+	profile: number;
 
 	@PrimaryColumn({
 		name: "interest_id"

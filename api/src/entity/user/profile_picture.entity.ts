@@ -33,7 +33,4 @@ export class ProfilePicture {
 		name: "user_picture_id"
 	})
 	picture: UserPicture;
-
-	@OneToOne(() => User)
-	user: User;
 }

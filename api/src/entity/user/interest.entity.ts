@@ -7,6 +7,6 @@ export class Interest {
 	})
 	id: number;
 
-	@Column()
+	@Column({ unique: true })
 	name: string;
 }
