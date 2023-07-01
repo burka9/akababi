@@ -1,7 +1,7 @@
 import axios from "axios";
 import { NextFunction, Request, Response } from "express";
 import { Unauthorized } from "../lib/errors";
-import { AUTH0, OFFLINE, OFFLINE_URL } from "../lib/env";
+import { AUTH0 } from "../lib/env";
 import { userRepo } from "../controller/user";
 import { User } from "../entity/user/user.entity";
 import { createNewUser } from "../controller/user/static";
@@ -10,7 +10,7 @@ import logger from "../lib/logger";
 export const IncludeUser = async (req: Request, res: Response, next: NextFunction) => {
 	try {
 		// fetch user info from auth0 server
-		const { data } = await axios.get(OFFLINE ? `${OFFLINE_URL}/userinfo` : `${AUTH0.DOMAIN}/userinfo`, {
+		const { data } = await axios.get(`${AUTH0.DOMAIN}/userinfo`, {
 			headers: { Authorization: req.headers.authorization }
 		})
 
@@ -19,7 +19,7 @@ export const IncludeUser = async (req: Request, res: Response, next: NextFunctio
 		// fetch user data from database
 		let user = await userRepo.findOne({
 			where: { sub: data.sub },
-			relations: ["profile", "audioCategories", "pictureCategories", "videoCategories", "posts"]
+			relations: ["profile", "profile.profilePicture.picture", "pictureCategories"]
 		})
 		
 		// create new user
@@ -41,6 +41,6 @@ export const IncludeUser = async (req: Request, res: Response, next: NextFunctio
 		next()
 	} catch(err: any) {
 		logger.error(err.message)
-		throw new Unauthorized()
+		throw err
 	}
 }

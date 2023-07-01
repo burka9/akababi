@@ -7,9 +7,9 @@ export const userRepo = Database.getRepository(User)
 
 
 export const DEFAULT_CATEGORIES = {
-	audio: ["My Voice Notes"],
-	pictures: ["My Pictures"],
-	videos: ["My Videos"],
+	audio: "My Voice Notes",
+	pictures: "My Pictures",
+	videos: "My Videos",
 }
 
 

@@ -75,6 +75,3 @@ export const AUTH0 = {
 export const GEOLOCATION = {
 	API_KEY: process.env.GEO_LOCATION_API_KEY
 }
-
-export const OFFLINE = process.env.OFFLINE === "true"
-export const OFFLINE_URL = process.env.OFFLINE_URL || "http://localhost:8181"

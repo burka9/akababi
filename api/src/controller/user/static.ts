@@ -9,9 +9,9 @@ import { UserVideoCategory } from "../../entity/user/user_video_category.entity"
 export const createNewUser = async (user: User): Promise<User> => {
 	user.profile = new UserProfile()
 	user.profile.profilePicture = new ProfilePicture()
-	user.audioCategories = DEFAULT_CATEGORIES.audio.map(category => new UserAudioCategory(category))
-	user.pictureCategories = DEFAULT_CATEGORIES.pictures.map(category => new UserPictureCategory(category))
-	user.videoCategories = DEFAULT_CATEGORIES.videos.map(category => new UserVideoCategory(category))
+	user.audioCategories = [new UserAudioCategory(DEFAULT_CATEGORIES.audio)]
+	user.pictureCategories = [new UserPictureCategory(DEFAULT_CATEGORIES.pictures)]
+	user.videoCategories = [new UserVideoCategory(DEFAULT_CATEGORIES.videos)]
 
 	return userRepo.save(user)
 }

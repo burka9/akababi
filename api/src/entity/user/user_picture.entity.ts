@@ -1,7 +1,6 @@
-import { Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { UserMultimedia } from "./helper/user_multimedia";
 import { UserPictureCategory } from "./user_picture_category.entity";
-import { ProfilePicture } from "./profile_picture.entity";
 
 @Entity()
 export class UserPicture extends UserMultimedia {
@@ -19,7 +18,4 @@ export class UserPicture extends UserMultimedia {
 		name: "user_picture_category_id"
 	})
 	category: UserPictureCategory;
-
-	@OneToOne(() => ProfilePicture)
-	profilePicture: ProfilePicture;
 }

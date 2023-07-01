@@ -4,12 +4,14 @@ import helmet from 'helmet'
 import { createServer } from 'http'
 import morgan from 'morgan'
 import cors from 'cors'
-import { SERVER } from './lib/env'
+import { DATABASE, DEVELOPMENT, SERVER } from './lib/env'
 import logger from './lib/logger'
 import { RouteConfig } from './lib/route.config'
 import { errorHandler } from './middleware/error_handler'
 import { Database } from './database'
 import MiscRoute from './routes/misc.route'
+import UserRoute from './routes/user.route'
+import { existsSync, mkdirSync, rmSync } from 'fs'
 
 const routes: Array<RouteConfig> = []
 
@@ -31,6 +33,7 @@ app.use(morgan('combined', {
 
 // routes configuration
 routes.push(new MiscRoute(app))
+routes.push(new UserRoute(app))
 
 
 
@@ -63,11 +66,18 @@ const SERVER_ERROR = (err: any) => {
 }
 
 
+const uploadInit = () => {
+	DEVELOPMENT && DATABASE.DROP_SCHEMA && existsSync('uploads') && rmSync('uploads', { recursive: true })
+	!existsSync('uploads') && mkdirSync('uploads')
+}
+
 
 // database configuration
 Database.initialize()
 	.then(async () => {
 		logger.info('database connected')
+
+		uploadInit()
 		
 		server
 			.listen(SERVER.PORT, SERVER.HOST, SERVER_CALLBACK)

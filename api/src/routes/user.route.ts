@@ -5,8 +5,9 @@ import { jwtCheck } from "../middleware/jwt_check";
 import { IncludeUser } from "../middleware/include_user";
 import { IncludeLocation } from "../middleware/include_location";
 import profile from "../controller/user/profile";
-import { body } from "express-validator"
+import { checkSchema } from "express-validator"
 import { upload } from "../lib/file_upload";
+import { MaritalStatus, Privacy } from "../entity";
 
 export default class UserRoute extends RouteConfig {
 	profile: Router
@@ -19,28 +20,41 @@ export default class UserRoute extends RouteConfig {
 		this.profile = Router()
 		this.router.use(IncludeLocation)
 
-		this.router.use("/profile", this.profile)
-		this.app.use("/api/user", this.router)
+		this.router.use("/profile", this.profile) // ---> api/user/profile
+		this.app.use("/api/user", this.router) // ---> api/user
 	}
 
 	configureRoutes(): void {
-		this.router.route("/is-new-user")
+		this.router.route("/is-new-user") // ---> api/user/is-new-user
 			.get(jwtCheck, IncludeUser, user.isNewUser)
 
-		// profile
-		this.profile.route("/self")
+		this.profile.route("/self") // ---> api/user/profile/self
 			.get(jwtCheck, IncludeUser, profile.readSelfProfile)
 			.put(
 				jwtCheck, IncludeUser,
-				upload.single('profilePicture'),
-				body("firstName").optional().notEmpty().isAlphanumeric().escape(),
-				body("lastName").optional().notEmpty().isAlphanumeric().escape(),
-				body("birthday").optional().notEmpty().isDate().escape(),
-				body("maritalStatus").optional().notEmpty().isAlpha().escape(),
-				body("nationality").optional().notEmpty().isAlpha().escape(),
-				body("profilePrivacy").optional().notEmpty().isAlpha().escape(),
-				body("interests").optional().isArray().escape(),
+				upload.single('profile_picture'),
+				checkSchema({
+					first_name: { notEmpty: true, optional: true, isAlpha: true, escape: true },
+					last_name: { notEmpty: true, optional: true, isAlpha: true, escape: true },
+					birthday: { notEmpty: true, optional: true, isDate: true, escape: true },
+					marital_status: {
+						notEmpty: true, optional: true, isIn: {
+							options: Object.values(MaritalStatus)
+						},
+						escape: true
+					},
+					nationality: { notEmpty: true, optional: true, isAlpha: true, escape: true },
+					profile_privacy: {
+						notEmpty: true, optional: true, isIn: {
+							options: Object.values(Privacy)
+						},
+						escape: true
+					},
+					interests: {
+						notEmpty: true, optional: true, isString: true, escape: true }
+				}, ['body']),
+
 				profile.updateSelfProfile
 			)
-	}
+	} // configure routes
 }

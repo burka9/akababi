@@ -11,7 +11,6 @@ import { SharedPost } from "../post/shared_post.entity";
 import { Message } from "../misc/message.entity";
 import { Group } from "../group/group.entity";
 import { Notification } from "../misc/notification.entity";
-import { ProfilePicture } from "./profile_picture.entity";
 import { SavedMedia } from "../post/saved_media.entity";
 
 @Entity()

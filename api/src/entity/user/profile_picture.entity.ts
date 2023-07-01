@@ -1,8 +1,6 @@
 import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
-import { UserProfile } from "./user_profile.entity";
 import { UserPicture } from "./user_picture.entity";
 import { Privacy } from "..";
-import { User } from "./user.entity";
 
 @Entity()
 export class ProfilePicture {
@@ -22,9 +20,6 @@ export class ProfilePicture {
 	/**
 	 * Relations
 	 */
-	@OneToOne(() => UserProfile)
-	profile: UserProfile;
-
 	@OneToOne(() => UserPicture, {
 		onUpdate: "CASCADE",
 		onDelete: "SET NULL"

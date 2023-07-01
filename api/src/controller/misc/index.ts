@@ -4,7 +4,6 @@ import { Database } from "../../database";
 import { goodRequest } from "../../lib/response";
 import { BadFields, NoItem } from "../../lib/errors";
 import { matchedData, validationResult } from "express-validator";
-import { In } from "typeorm";
 
 export const interestRepo = Database.getRepository(Interest)
 
