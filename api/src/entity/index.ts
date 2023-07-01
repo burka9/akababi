@@ -24,6 +24,18 @@ export const LocationOptions: ColumnOptions = {
 	},
 }
 
+export const UniqueNameOptions: ColumnOptions = {
+	unique: true,
+	transformer: {
+		from(value) {
+				return value.toLowerCase()
+		},
+		to(value) {
+				return value
+		},
+	}
+}
+
 export type LocationType = { longitude: number, latitude: number}
 
 export enum NotificationType {

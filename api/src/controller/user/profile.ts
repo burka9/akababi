@@ -8,7 +8,7 @@ import { BadFields } from "../../lib/errors";
 import { DEFAULT_CATEGORIES, userRepo } from ".";
 import { UserPicture } from "../../entity/user/user_picture.entity";
 import { UserPictureCategory } from "../../entity/user/user_picture_category.entity";
-import { interestRepo } from "../misc";
+import { interestRepo } from "../misc/interest";
 
 export const userInterestRepo = Database.getRepository(UserInterest)
 export const userPictureRepo = Database.getRepository(UserPicture)
