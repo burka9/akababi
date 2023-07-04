@@ -4,13 +4,14 @@ import { goodRequest } from "../../lib/response";
 import { Database } from "../../database";
 import { UserInterest } from "../../entity/user/user_interest.entity";
 import { matchedData, validationResult } from "express-validator";
-import { BadFields } from "../../lib/errors";
+import { BadFields, NoItem, Unauthorized } from "../../lib/errors";
 import { DEFAULT_CATEGORIES, userFollowerRepo, userRepo } from ".";
 import { UserPicture } from "../../entity/user/user_picture.entity";
 import { UserPictureCategory } from "../../entity/user/user_picture_category.entity";
 import { interestRepo } from "../misc/interest";
-import { Gender } from "../../entity";
+import { Gender, Privacy } from "../../entity";
 import { postRepo } from "../post";
+import { readUserProfile } from "./static";
 
 export const userInterestRepo = Database.getRepository(UserInterest)
 export const userPictureRepo = Database.getRepository(UserPicture)
@@ -18,30 +19,33 @@ export const userPictureCategoryRepo = Database.getRepository(UserPictureCategor
 
 class userProfileController {
 	async readSelfProfile(req: Request, res: Response) {
-		const user = res.locals.user as User
-		const interests = await userInterestRepo
-			.query(`
-				SELECT interest.*
-				FROM user_interest
-				LEFT JOIN interest ON user_interest.interest_id = interest.interest_id
-				WHERE user_interest.user_profile_id = ${user.profile.id}
-			`)
+		const user = res.locals.user as User | any
 
-		const [posts, totalPosts] = await postRepo.findAndCount({
-			where: {
-				user: { sub: user.sub }
-			},
-			relations: ["reactions"]
-		})
-
-		const [followers, totalFollowers] = await userFollowerRepo.findAndCountBy({
-			following: user.sub
-		})
-
-		const totalReactions = posts.reduce((acc, post) => acc + post.reactions.length, 0)
+		delete user.pictureCategories
 
 		goodRequest(res, {
-			user: { ...user, interests, totalPosts, totalReactions, totalFollowers }
+			user: await readUserProfile(user as User)
+		})
+	}
+
+	async readOtherProfile(req: Request, res: Response) {
+		const result = validationResult(req)
+		const { sub } = matchedData(req)
+
+		if (!result.isEmpty()) throw new BadFields(result)
+
+		const user = await userRepo.findOne({
+			where: { sub },
+			relations: ["profile", "profile.profilePicture.picture"]
+		})
+		
+		if (!user) throw new NoItem("User")
+		
+		// handle profile privacy
+		if (user.profile.profilePrivacy === Privacy.OnlyMe) throw new Unauthorized()
+
+		goodRequest(res, {
+			user: await readUserProfile(user as User)
 		})
 	}
 

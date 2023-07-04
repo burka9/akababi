@@ -5,7 +5,7 @@ import { jwtCheck } from "../middleware/jwt_check";
 import { IncludeUser } from "../middleware/include_user";
 import { IncludeLocation } from "../middleware/include_location";
 import profile from "../controller/user/profile";
-import { checkSchema } from "express-validator"
+import { checkSchema, query } from "express-validator"
 import { upload } from "../lib/file_upload";
 import { Gender, MaritalStatus, Privacy } from "../entity";
 
@@ -18,9 +18,11 @@ export default class UserRoute extends RouteConfig {
 
 	registerRoute(): void {
 		this.profile = Router()
+
 		this.router.use(IncludeLocation)
 
 		this.router.use("/profile", this.profile) // ---> api/user/profile
+
 		this.app.use("/api/user", this.router) // ---> api/user
 	}
 
@@ -36,6 +38,15 @@ export default class UserRoute extends RouteConfig {
 			.get(jwtCheck, IncludeUser, user.isNewUser)
 
 
+		/**
+		 * URL: api/user/profile
+		 * 	- POST: Return user profile data for other user
+		 * 			- query validation: query
+		 */
+		this.profile.route("/")
+			.get(query('user_sub').isString().notEmpty().escape(), profile.readOtherProfile)
+			
+			
 		/**
 		 * URL: api/user/profile/self
 		 * 	- GET: Return user profile data

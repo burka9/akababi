@@ -15,6 +15,18 @@ class PostController {
 
 		goodRequest(res, { post })
 	}
+
+	async readSelfPosts(req: Request, res: Response) {
+		const user = res.locals.user as User
+
+		goodRequest(res, {
+			posts: await postRepo.find({
+				where: {
+					user: { sub: user.sub }
+				}
+			})
+		})
+	}
 	
 	async createPost(req: Request, res: Response) {
 		const user = res.locals.user as User

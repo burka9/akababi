@@ -19,7 +19,7 @@ export default {
 
 		return users.map((user: User | any) => {
 			if (user.profile.profilePicture.privacy === Privacy.Everyone)
-				user.profilePicture = user.profile.profilePicture.picture.path
+				user.profilePicture = user.profile.profilePicture.picture ? user.profile.profilePicture.picture.path : null	
 
 			user.gender = user.profile.gender
 			delete user.profile

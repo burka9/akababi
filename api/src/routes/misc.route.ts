@@ -23,6 +23,7 @@ export default class MiscRoute extends RouteConfig {
 		this.router.use("/interest", this.interest) // ---> api/misc/interest
 		this.router.use("/category", this.category) // ---> api/misc/category
 		this.router.use("/reaction", this.reaction) // ---> api/misc/reaction
+
 		this.app.use("/api/misc", this.router) // ---> api/misc
 	}
 

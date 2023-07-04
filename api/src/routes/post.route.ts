@@ -11,17 +11,25 @@ import comment from "../controller/post/comment";
 import reaction from "../controller/post/reaction";
 
 export default class PostRoute extends RouteConfig {
+	reaction: Router;
 	comment: Router;
+	self: Router;
 
 	constructor(app: Application) {
 		super(app, "Post Route")
 	}
 
 	registerRoute(): void {
+		this.reaction = Router()
 		this.comment = Router()
+		this.self = Router()
+
 		this.router.use(IncludeLocation)
 
+		this.router.use("/reaction", this.reaction) // ---> api/post/reaction
 		this.router.use("/comment", this.comment) // ---> api/post/comment
+		this.router.use("/self", this.self) // ---> api/post/self
+
 		this.app.use("/api/post", this.router) // ---> api/post
 	}
 
@@ -54,6 +62,17 @@ export default class PostRoute extends RouteConfig {
 
 
 		/**
+		 * URL: api/post/self
+		 * 	- GET: Return the user's own posts
+		 * 			- jwt check
+		 * 			- include user
+		 * 
+		 */
+		this.self.route("/")
+			.get(jwtCheck, IncludeUser, post.readSelfPosts)
+
+
+		/**
 		 * URL: api/post/comment
 		 * 	- POST: make comment on a post
 		 * 			- jwt check
@@ -82,7 +101,7 @@ export default class PostRoute extends RouteConfig {
 		 * 			- query validation: query
 		 * 				- reaction_id
 		 */
-		this.router.route("/reaction")
+		this.reaction.route("/")
 			.post(jwtCheck, IncludeUser, IncludePost, query('reaction_id').notEmpty().escape(), reaction.reactToPost)
 	}
 }
