@@ -21,12 +21,33 @@ export default class MiscRoute extends RouteConfig {
 		this.reaction = Router()
 
 		this.router.use("/interest", this.interest) // ---> api/misc/interest
-		this.router.use("/category", this.category) // ---> api/misc/interest
+		this.router.use("/category", this.category) // ---> api/misc/category
 		this.router.use("/reaction", this.reaction) // ---> api/misc/reaction
 		this.app.use("/api/misc", this.router) // ---> api/misc
 	}
 
 	configureRoutes(): void {
+		/**
+		 * URL: api/misc/interest
+		 * 	- GET: read the list of interests
+		 * 			- query validation: query
+		 * 				- interest_id: filter interests by id
+		 * 				- interest_name: filter interests by name
+		 * 
+		 * 	- POST: create new interest object
+		 * 			- body validation: body
+		 * 				- interest_name: the name for the new object
+		 * 
+		 * 	- PUT: edit interest object
+		 * 			- body validation: body
+		 * 				- interest_id: used to find the interest object
+		 * 				- interest_name: the new name for the object
+		 * 
+		 * 	- DELETE: delete interest object
+		 * 			- body validation: body
+		 * 				- interest_id: used to find the interest object
+		 * 
+		 */
 		this.interest.route("/")
 			.get(
 				query(['interest_id', 'interest_name']).escape(),
@@ -45,6 +66,28 @@ export default class MiscRoute extends RouteConfig {
 				interest.removeInterest
 			)
 
+
+		/**
+		 * URL: api/misc/category
+		 * 	- GET: read the list of categories
+		 * 			- query validation: query
+		 * 				- category_id: filter categorys by id
+		 * 				- category_name: filter categorys by name
+		 * 
+		 * 	- POST: create new category object
+		 * 			- body validation: body
+		 * 				- category_name: the name for the new object
+		 * 
+		 * 	- PUT: edit category object
+		 * 			- body validation: body
+		 * 				- category_id: used to find the category object
+		 * 				- category_name: the new name for the object
+		 * 
+		 * 	- DELETE: delete category object
+		 * 			- body validation: body
+		 * 				- category_id: used to find the category object
+		 * 
+		 */
 		this.category.route("/")
 			.get(
 				query(['category_id', 'category_name']).escape(),
@@ -63,6 +106,28 @@ export default class MiscRoute extends RouteConfig {
 				category.removeCategory
 			)
 
+
+		/**
+		 * URL: api/misc/reaction
+		 * 	- GET: read the list of reactions
+		 * 			- query validation: query
+		 * 				- reaction_id: filter reactions by id
+		 * 				- reaction_name: filter reactions by name
+		 * 
+		 * 	- POST: create new reaction object
+		 * 			- body validation: body
+		 * 				- reaction_name: the name for the new object
+		 * 
+		 * 	- PUT: edit reaction object
+		 * 			- body validation: body
+		 * 				- reaction_id: used to find the reaction object
+		 * 				- reaction_name: the new name for the object
+		 * 
+		 * 	- DELETE: delete reaction object
+		 * 			- body validation: body
+		 * 				- reaction_id: used to find the reaction object
+		 * 
+		 */
 		this.reaction.route("/")
 			.get(
 				query(['reaction_id', 'reaction_name']).escape(),

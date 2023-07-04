@@ -5,10 +5,12 @@ import { Database } from "../../database";
 import { UserInterest } from "../../entity/user/user_interest.entity";
 import { matchedData, validationResult } from "express-validator";
 import { BadFields } from "../../lib/errors";
-import { DEFAULT_CATEGORIES, userRepo } from ".";
+import { DEFAULT_CATEGORIES, userFollowerRepo, userRepo } from ".";
 import { UserPicture } from "../../entity/user/user_picture.entity";
 import { UserPictureCategory } from "../../entity/user/user_picture_category.entity";
 import { interestRepo } from "../misc/interest";
+import { Gender } from "../../entity";
+import { postRepo } from "../post";
 
 export const userInterestRepo = Database.getRepository(UserInterest)
 export const userPictureRepo = Database.getRepository(UserPicture)
@@ -25,8 +27,21 @@ class userProfileController {
 				WHERE user_interest.user_profile_id = ${user.profile.id}
 			`)
 
+		const [posts, totalPosts] = await postRepo.findAndCount({
+			where: {
+				user: { sub: user.sub }
+			},
+			relations: ["reactions"]
+		})
+
+		const [followers, totalFollowers] = await userFollowerRepo.findAndCountBy({
+			following: user.sub
+		})
+
+		const totalReactions = posts.reduce((acc, post) => acc + post.reactions.length, 0)
+
 		goodRequest(res, {
-			user: { ...user, interests }
+			user: { ...user, interests, totalPosts, totalReactions, totalFollowers }
 		})
 	}
 
@@ -35,9 +50,9 @@ class userProfileController {
 		if (!result.isEmpty()) throw new BadFields(result)
 
 		const user = res.locals.user as User
-		const { first_name, last_name, birthday, marital_status, nationality, profile_privacy, interests } = matchedData(req)
+		const { first_name, last_name, gender, birthday, marital_status, nationality, profile_privacy, interests } = matchedData(req)
 
-		let edited = !!(first_name || last_name || birthday || marital_status || nationality || profile_privacy || interests)
+		let edited = !!(first_name || last_name || gender || birthday || marital_status || nationality || profile_privacy || interests)
 
 		if (first_name) {
 			user.profile.firstName = first_name
@@ -46,6 +61,10 @@ class userProfileController {
 		if (last_name) {
 			user.profile.lastName = last_name
 		} // last name
+
+		if (gender && gender.toLowerCase() in Gender) {
+			user.profile.gender = gender.toLowerCase()
+		} // gender
 
 		if (birthday) {
 			user.profile.birthday = birthday

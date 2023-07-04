@@ -1,7 +1,7 @@
 import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { User } from "./user.entity";
 import { ProfilePicture } from "./profile_picture.entity";
-import { MaritalStatus, Privacy } from "..";
+import { Gender, MaritalStatus, Privacy } from "..";
 
 @Entity()
 export class UserProfile {
@@ -21,6 +21,13 @@ export class UserProfile {
 		nullable: true
 	})
 	lastName: string;
+
+	@Column({
+		type: "enum",
+		enum: Gender,
+		nullable: true,
+	})
+	gender: Gender;
 
 	@Column({
 		nullable: true

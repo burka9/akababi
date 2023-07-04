@@ -12,6 +12,9 @@ import { Database } from './database'
 import MiscRoute from './routes/misc.route'
 import UserRoute from './routes/user.route'
 import { existsSync, mkdirSync, rmSync } from 'fs'
+import DiscoverRoute from './routes/discover.route'
+import { incomingRequestHandler } from './middleware/incoming_request_handler'
+import PostRoute from './routes/post.route'
 
 const routes: Array<RouteConfig> = []
 
@@ -31,9 +34,15 @@ app.use(morgan('combined', {
 }))
 
 
+// incoming routes
+app.use(incomingRequestHandler)
+
+
 // routes configuration
 routes.push(new MiscRoute(app))
 routes.push(new UserRoute(app))
+routes.push(new DiscoverRoute(app))
+routes.push(new PostRoute(app))
 
 
 

@@ -5,14 +5,14 @@ import { BadFields, NoItem } from "../../lib/errors";
 import { matchedData, validationResult } from "express-validator";
 import { ReactionTag } from "../../entity/post/reaction_tag.entity";
 
-export const reactionRepo = Database.getRepository(ReactionTag)
+export const reactionTagRepo = Database.getRepository(ReactionTag)
 
 class ReactionController {
 	async readReaction(req: Request, res: Response) {
 		const { reaction_id, reaction_name } = matchedData(req)
 
 		goodRequest(res, {
-			reactions: await reactionRepo.find({
+			reactions: await reactionTagRepo.find({
 				where: {
 					...(reaction_id ? { id: reaction_id } : null),
 					...(reaction_name ? { name: reaction_name } : null),
@@ -29,7 +29,7 @@ class ReactionController {
 
 		const reaction = new ReactionTag(reaction_name)
 
-		await reactionRepo.save(reaction)
+		await reactionTagRepo.save(reaction)
 
 		goodRequest(res)
 	}
@@ -40,12 +40,12 @@ class ReactionController {
 
 		if (!result.isEmpty()) throw new BadFields(result)
 
-		const reaction = await reactionRepo.findOneBy({ id: reaction_id })
+		const reaction = await reactionTagRepo.findOneBy({ id: reaction_id })
 		if (!reaction) throw new NoItem()
 
 		reaction.name = reaction_name
 
-		await reactionRepo.save(reaction)
+		await reactionTagRepo.save(reaction)
 
 		goodRequest(res)
 	}
@@ -56,10 +56,10 @@ class ReactionController {
 
 		if (!result.isEmpty()) throw new BadFields(result)
 
-		const reaction = await reactionRepo.findOneBy({ id: reaction_id })
+		const reaction = await reactionTagRepo.findOneBy({ id: reaction_id })
 		if (!reaction) throw new NoItem()
 
-		await reactionRepo.remove(reaction)
+		await reactionTagRepo.remove(reaction)
 
 		goodRequest(res)
 	}

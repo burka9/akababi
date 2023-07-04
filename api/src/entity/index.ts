@@ -15,6 +15,8 @@ export const LocationOptions: ColumnOptions = {
 	nullable: true,
 	transformer: {
 		from(value: string) {
+			if (!value) return {}
+
 			const [longitude, latitude] = value.substring(6, value.length-1).split(" ")
 			return { longitude, latitude }
 		},
@@ -52,4 +54,9 @@ export enum Privacy {
 	GroupMembers = "GroupMembers",
 	Followers = "Followers",
 	OnlyMe = "OnlyMe",
+}
+
+export enum Gender {
+	male = "male",
+	female = "female"
 }
