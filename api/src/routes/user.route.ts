@@ -5,7 +5,7 @@ import { jwtCheck } from "../middleware/jwt_check";
 import { IncludeUser } from "../middleware/include_user";
 import { IncludeLocation } from "../middleware/include_location";
 import profile from "../controller/user/profile";
-import { checkSchema, query } from "express-validator"
+import { body, checkSchema, query } from "express-validator"
 import { upload } from "../lib/file_upload";
 import { Gender, MaritalStatus, Privacy } from "../entity";
 
@@ -40,7 +40,7 @@ export default class UserRoute extends RouteConfig {
 
 		/**
 		 * URL: api/user/profile
-		 * 	- POST: Return user profile data for other user
+		 * 	- GET: Return user profile data for other user
 		 * 			- query validation: query
 		 */
 		this.profile.route("/")
@@ -53,7 +53,7 @@ export default class UserRoute extends RouteConfig {
 		 * 			- jwt check
 		 * 			- include user object
 		 * 
-		 * 	- POST: Updates the user's profile
+		 * 	- PUT: Updates the user's profile
 		 * 			- jwt check
 		 * 			- include user object
 		 * 			- multer single file upload (profile_picture)
@@ -102,5 +102,28 @@ export default class UserRoute extends RouteConfig {
 				}, ['body']),
 				profile.updateSelfProfile
 			)
+
+		/**
+		 * URL: api/user/profile/follower
+		 * 	- GET: get list of people who follow me
+		 * 			- jwt check
+		 * 			- include user
+		 *
+		 * 	- POST: follow a user
+		 * 			- jwt check
+		 * 			- include user
+		 * 			- body validation: body
+		 * 				- user_sub
+		 * 
+		 * 	- DELETE: unfollow a user
+		 * 			- jwt check
+		 * 			- include user
+		 * 			- body validation: body
+		 * 				- user_sub
+		 */
+		this.profile.route("/follower")
+				.get(jwtCheck, IncludeUser, profile.getMyFollowers)
+				.post(jwtCheck, IncludeUser, body('user_sub').isString().notEmpty().escape(), profile.followUser)
+				.delete(jwtCheck, IncludeUser, body('user_sub').isString().notEmpty().escape(), profile.unfollowUser)
 	} // configure routes
 }

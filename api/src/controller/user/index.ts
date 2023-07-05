@@ -7,6 +7,7 @@ import { Privacy } from "../../entity"
 import { UserFollower } from "../../entity/user/user_follower.entity"
 
 export const userRepo = Database.getRepository(User)
+export const userFollowerRepo = Database.getRepository(UserFollower)
 
 
 export const DEFAULT_CATEGORIES = {
@@ -15,7 +16,6 @@ export const DEFAULT_CATEGORIES = {
 	videos: "My Videos",
 }
 
-export const userFollowerRepo = Database.getRepository(UserFollower)
 
 class UserController {
 	async isNewUser(req: Request, res: Response) {

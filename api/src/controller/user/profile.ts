@@ -4,14 +4,13 @@ import { goodRequest } from "../../lib/response";
 import { Database } from "../../database";
 import { UserInterest } from "../../entity/user/user_interest.entity";
 import { matchedData, validationResult } from "express-validator";
-import { BadFields, NoItem, Unauthorized } from "../../lib/errors";
+import { BadFields, NoItem, Unauthorized, error } from "../../lib/errors";
 import { DEFAULT_CATEGORIES, userFollowerRepo, userRepo } from ".";
 import { UserPicture } from "../../entity/user/user_picture.entity";
 import { UserPictureCategory } from "../../entity/user/user_picture_category.entity";
 import { interestRepo } from "../misc/interest";
 import { Gender, Privacy } from "../../entity";
-import { postRepo } from "../post";
-import { readUserProfile } from "./static";
+import { getFollowers, readUserProfile } from "./static";
 
 export const userInterestRepo = Database.getRepository(UserInterest)
 export const userPictureRepo = Database.getRepository(UserPicture)
@@ -38,9 +37,9 @@ class userProfileController {
 			where: { sub },
 			relations: ["profile", "profile.profilePicture.picture"]
 		})
-		
+
 		if (!user) throw new NoItem("User")
-		
+
 		// handle profile privacy
 		if (user.profile.profilePrivacy === Privacy.OnlyMe) throw new Unauthorized()
 
@@ -125,6 +124,53 @@ class userProfileController {
 
 		user.profile.newUser = !edited
 		await userRepo.save(user)
+
+		goodRequest(res)
+	}
+
+	async getMyFollowers(req: Request, res: Response) {
+		const user = res.locals.user as User
+
+		const followers = await getFollowers(user)
+
+		goodRequest(res, { followers })
+	}
+
+	async followUser(req: Request, res: Response) {
+		const result = validationResult(req)
+		if (!result.isEmpty()) throw new BadFields(result)
+
+		const user = res.locals.user as User
+		const { user_sub: sub } = matchedData(req)
+
+		// if (user.sub === sub) throw new error("You can't follow yourself")
+
+		const following = await userRepo.findOneBy({ sub })
+		if (!following) throw new NoItem("User")
+
+		const row = await userFollowerRepo.create({
+			follower: user.sub,
+			following: following.sub
+		})
+
+		await userFollowerRepo.save(row)
+
+		goodRequest(res)
+	}
+
+	async unfollowUser(req: Request, res: Response) {
+		const result = validationResult(req)
+		if (!result.isEmpty()) throw new BadFields(result)
+
+		const user = res.locals.user as User
+		const { user_sub: sub } = matchedData(req)
+
+		const row = await userFollowerRepo.findOneBy({
+			follower: user.sub,
+			following: sub
+		})
+
+		if (row) await userFollowerRepo.remove(row)
 
 		goodRequest(res)
 	}

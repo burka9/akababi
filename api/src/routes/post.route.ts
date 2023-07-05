@@ -5,7 +5,7 @@ import { jwtCheck } from "../middleware/jwt_check";
 import { IncludeUser } from "../middleware/include_user";
 import post from "../controller/post";
 import { upload } from "../lib/file_upload";
-import { checkSchema, query } from "express-validator";
+import { body, checkSchema } from "express-validator";
 import { IncludePost } from "../middleware/include_post";
 import comment from "../controller/post/comment";
 import reaction from "../controller/post/reaction";
@@ -98,10 +98,10 @@ export default class PostRoute extends RouteConfig {
 		 * 			- jwt check
 		 * 			- include user
 		 * 			- include post
-		 * 			- query validation: query
+		 * 			- body validation: body
 		 * 				- reaction_id
 		 */
 		this.reaction.route("/")
-			.post(jwtCheck, IncludeUser, IncludePost, query('reaction_id').notEmpty().escape(), reaction.reactToPost)
+			.post(jwtCheck, IncludeUser, IncludePost, body('reaction_id').notEmpty().escape(), reaction.reactToPost)
 	}
 }

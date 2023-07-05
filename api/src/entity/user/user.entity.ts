@@ -12,6 +12,8 @@ import { Message } from "../misc/message.entity";
 import { Group } from "../group/group.entity";
 import { Notification } from "../misc/notification.entity";
 import { SavedMedia } from "../post/saved_media.entity";
+import { Database } from "../../database";
+import { UserFollower } from "./user_follower.entity";
 
 @Entity()
 export class User {
@@ -46,6 +48,19 @@ export class User {
 		default: Privacy.Everyone,
 	})
 	onlineStatusPrivacy: Privacy;
+
+
+	/**
+	 * Methods
+	 */
+	public async isFollowerOf(user: User): Promise<boolean> {
+		const [data, count] = await Database.getRepository(UserFollower).findAndCountBy({
+			follower: this.sub,
+			following: user.sub
+		})
+		
+		return count > 0
+	}
 
 
 	/**
