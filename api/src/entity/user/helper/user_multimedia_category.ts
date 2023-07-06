@@ -1,6 +1,7 @@
-import { CreateDateColumn, Column } from "typeorm";
+import { CreateDateColumn, Column, Unique } from "typeorm";
 import { Privacy } from "../..";
 
+@Unique(["id", "name"])
 export abstract class UserMultimediaCategory {
 	constructor(name: string) {
 		this.name = name
@@ -11,9 +12,7 @@ export abstract class UserMultimediaCategory {
 	})
 	createdAt: Date;
 
-	@Column({
-		unique: true
-	})
+	@Column()
 	name: string;
 
 	@Column({
