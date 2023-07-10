@@ -30,7 +30,7 @@ export const UniqueNameOptions: ColumnOptions = {
 	unique: true,
 	transformer: {
 		from(value) {
-				return value.toLowerCase()
+				return value ? value.toLowerCase() : value
 		},
 		to(value) {
 				return value

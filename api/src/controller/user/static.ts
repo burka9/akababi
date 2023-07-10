@@ -38,9 +38,13 @@ export const readUserProfile = async (user: User): Promise<any> => {
 		following: user.sub
 	})
 
+	const [following, totalFollowing] = await userFollowerRepo.findAndCountBy({
+		follower: user.sub
+	})
+
 	const totalReactions = posts.reduce((acc, post) => acc + post.reactions.length, 0)
 
-	return { ...user, interests, totalPosts, totalReactions, totalFollowers }
+	return { ...user, interests, totalPosts, totalReactions, totalFollowers, totalFollowing }
 }
 
 interface FollowerList {

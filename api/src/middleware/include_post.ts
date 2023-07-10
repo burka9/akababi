@@ -5,7 +5,7 @@ import logger from "../lib/logger";
 
 export const IncludePost = async (req: Request, res: Response, next: NextFunction) => {
 	try {
-		const postId = Number(req.query.post_id)
+		const postId = Number(req.query.post_id) || Number(req.body.post_id)
 
 		if (isNaN(postId)) throw new BadFields()
 
@@ -19,7 +19,7 @@ export const IncludePost = async (req: Request, res: Response, next: NextFunctio
 			.addSelect("user_comment.sub")
 			.leftJoin("post_reaction.user", "user_reaction")
 			.addSelect("user_reaction.sub")
-			.leftJoinAndSelect("post_reaction.reaction", "reaction_tage")
+			.leftJoinAndSelect("post_reaction.reaction", "reaction_tag")
 			.where("post.id = :postId", { postId })
 			.getOne()
 

@@ -29,7 +29,7 @@ class userProfileController {
 
 	async readOtherProfile(req: Request, res: Response) {
 		const result = validationResult(req)
-		const { sub } = matchedData(req)
+		const { user_sub: sub } = matchedData(req)
 
 		if (!result.isEmpty()) throw new BadFields(result)
 
@@ -143,7 +143,7 @@ class userProfileController {
 		const user = res.locals.user as User
 		const { user_sub: sub } = matchedData(req)
 
-		// if (user.sub === sub) throw new error("You can't follow yourself")
+		if (user.sub === sub) throw new error("You can't follow yourself")
 
 		const following = await userRepo.findOneBy({ sub })
 		if (!following) throw new NoItem("User")
