@@ -22,6 +22,8 @@ export default {
 				user.profilePicture = user.profile.profilePicture.picture ? user.profile.profilePicture.picture.path : null	
 
 			user.gender = user.profile.gender
+			user.firstName = user.profile.firstName
+			user.lastName = user.profile.lastName
 			delete user.profile
 
 			return user

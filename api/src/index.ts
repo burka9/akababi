@@ -15,6 +15,7 @@ import { existsSync, mkdirSync, rmSync } from 'fs'
 import DiscoverRoute from './routes/discover.route'
 import { incomingRequestHandler } from './middleware/incoming_request_handler'
 import PostRoute from './routes/post.route'
+import SMSRoute from './routes/sms.route'
 
 const routes: Array<RouteConfig> = []
 
@@ -23,7 +24,9 @@ const routes: Array<RouteConfig> = []
 const app = express()
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
-app.use(helmet())
+app.use(helmet({
+	crossOriginResourcePolicy: false,
+}))
 app.use(cors())
 app.use(morgan('combined', {
 	stream: {
@@ -34,8 +37,17 @@ app.use(morgan('combined', {
 }))
 
 
+// static assets
+app.use("/assets", express.static("uploads"))
+
+
+// sms route
+routes.push(new SMSRoute(app))
+
+
 // incoming routes
 app.use(incomingRequestHandler)
+
 
 
 // routes configuration
@@ -87,7 +99,7 @@ Database.initialize()
 		logger.info('database connected')
 
 		uploadInit()
-		
+
 		server
 			.listen(SERVER.PORT, SERVER.HOST, SERVER_CALLBACK)
 			.on('error', SERVER_ERROR)

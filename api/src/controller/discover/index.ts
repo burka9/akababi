@@ -4,8 +4,9 @@ import Static from "./static";
 import { matchedData, validationResult } from "express-validator";
 import { BadFields } from "../../lib/errors";
 import { Gender } from "../../entity";
+import { APP } from "../../lib/env";
 
-const radius = 50 * 1000 // in kilometers
+const radius = APP.DISCOVER_RADIUS * 1000 // in kilometers
 
 class DiscoverController {
 	async discoverAll(req: Request, res: Response) {

@@ -33,13 +33,16 @@ const createUserIfNotExists = async (userinfo: Auth0UserInfo, location: Location
 		where: { sub: userinfo.sub },
 		relations: ["profile", "profile.profilePicture.picture", "pictureCategories"]
 	})
-
+	
 	// create new user
 	if (!user) {
 		user = new User()
 		user.sub = userinfo.sub
 		user.email = userinfo.email
 		user.location = location
+
+		if (userinfo.sub.startsWith("sms"))
+			user.phone = userinfo.name
 
 		await createNewUser(user)
 	} else {

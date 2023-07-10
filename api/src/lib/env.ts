@@ -70,6 +70,17 @@ export const AUTH0 = {
 	AUDIENCE: process.env.AUDIENCE,
 	ISSUER: process.env.ISSUER,
 	DOMAIN: process.env.DOMAIN,
+	CLIENT_ID: process.env.CLIENT_ID,
+	CLIENT_SECRET: process.env.CLIENT_SECRET,
+}
+
+export const SMS = {
+	URL: process.env.SMS_URL || "https://sms.yegara.com/api/send",
+	TOKEN: process.env.SMS_TOKEN || "",
+}
+
+export const APP = {
+	DISCOVER_RADIUS: Number(process.env.DISCOVER_RADIUS || "50"),
 }
 
 export const GEOLOCATION = {

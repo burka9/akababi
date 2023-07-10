@@ -28,7 +28,8 @@ export class User {
 	createdAt: Date;
 
 	@Column({
-		unique: true
+		unique: true,
+		nullable: true,
 	})
 	email: string;
 
