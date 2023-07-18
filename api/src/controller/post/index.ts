@@ -27,7 +27,7 @@ class PostController {
 			})
 		})
 	}
-	
+
 	async createPost(req: Request, res: Response) {
 		const user = res.locals.user as User
 		const result = validationResult(req)
@@ -43,9 +43,11 @@ class PostController {
 		post.user = user
 		post.location = res.locals.location
 
-		const category = await categoryRepo.findOneBy({ id: category_id })
-		if (category)
-			post.category = category
+		if (category_id) {
+			const category = await categoryRepo.findOneBy({ id: category_id })
+			if (category)
+				post.category = category
+		}
 
 		// files
 		if (req.files) {
