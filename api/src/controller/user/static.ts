@@ -68,10 +68,10 @@ export const getFollowers = async (user: User): Promise<FollowerList[]> => {
 			FROM user_follower
 
 			LEFT JOIN user
-			ON following_id = "${user.sub}"
+			ON user.user_id = user_follower.follower_id
 			
 			LEFT JOIN user_profile profile
-			ON following_id = "${user.sub}"
+			ON profile.user_profile_id = user.user_profile_id
 
 			LEFT JOIN profile_picture profile_p
 			ON profile_p.profile_picture_id = profile.profile_picture_id
@@ -83,6 +83,45 @@ export const getFollowers = async (user: User): Promise<FollowerList[]> => {
 		`)
 
 	return followers.map(user => {
+		user.timestamp = new Date(user.timestamp)
+		return user
+	})
+}
+
+/*
+ - timestamp
+ - sub
+ - first name
+ - last name
+ - profile picture
+ */
+export const getFollowing = async (user: User): Promise<FollowerList[]> => {
+	const following: FollowerList[] = await userFollowerRepo
+		.query(`
+			SELECT
+				user_follower.created_at AS timestamp,
+				user.user_id AS sub,
+				profile.first_name,
+				profile.last_name,
+				user_picture.path AS profile_picture
+			FROM user_follower
+
+			LEFT JOIN user
+			ON user.user_id = user_follower.following_id
+
+			LEFT JOIN user_profile profile
+			ON profile.user_profile_id = user.user_profile_id
+
+			LEFT JOIN profile_picture profile_p
+			ON profile_p.profile_picture_id = profile.profile_picture_id
+
+			LEFT JOIN user_picture
+			ON user_picture.user_picture_id = profile_p.user_picture_id
+				
+			WHERE follower_id = "${user.sub}"
+		`)
+
+	return following.map(user => {
 		user.timestamp = new Date(user.timestamp)
 		return user
 	})

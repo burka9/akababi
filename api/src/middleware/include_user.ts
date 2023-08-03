@@ -9,17 +9,21 @@ import logger from "../lib/logger";
 import { LocationType } from "../entity";
 
 interface Auth0UserInfo {
-	sub: string,
-	nickname: string,
-	name: string,
-	picture: string,
-	updated_at: string,
-	email: string,
-	email_verified: boolean
+	sub: string;
+	given_name: string;
+	family_name: string;
+	nickname: string;
+	name: string;
+	picture: string;
+	locale: string;
+	updated_at: string;
+	email: string;
+	email_verified: boolean;
+	phone_number: string;
 }
 
 // fetch user info from auth0 server
-const getUserInfo = async (Authorization: string): Promise<Auth0UserInfo> => {
+export const getUserInfo = async (Authorization: string): Promise<Auth0UserInfo> => {
 	const { data } = await axios.get(`${OFFLINE ? OFFLINE_AUTH_URL : AUTH0.DOMAIN}/userinfo`, {
 		headers: { Authorization }
 	})
@@ -27,22 +31,27 @@ const getUserInfo = async (Authorization: string): Promise<Auth0UserInfo> => {
 	return data
 }
 
-const createUserIfNotExists = async (userinfo: Auth0UserInfo, location: LocationType): Promise<User> => {
+export const createUserIfNotExists = async (userinfo: Auth0UserInfo, location: LocationType): Promise<User> => {
 	// fetch user data from database
 	let user = await userRepo.findOne({
 		where: { sub: userinfo.sub },
 		relations: ["profile", "profile.profilePicture.picture", "pictureCategories"]
 	})
-	
+
 	// create new user
 	if (!user) {
 		user = new User()
 		user.sub = userinfo.sub
 		user.email = userinfo.email
 		user.location = location
+		user.phone = userinfo.phone_number
 
-		if (userinfo.sub.startsWith("sms"))
-			user.phone = userinfo.name
+		// if (userinfo.sub.startsWith("sms")) {// sms
+		// 	user.phone = userinfo.name
+		// } else if (userinfo.sub.startsWith("google-oauth2")) { // google login
+		// 	user.profile.firstName = userinfo.given_name
+		// 	user.profile.lastName = userinfo.family_name
+		// }
 
 		await createNewUser(user)
 	} else {

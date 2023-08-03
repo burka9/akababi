@@ -10,7 +10,7 @@ import { UserPicture } from "../../entity/user/user_picture.entity";
 import { UserPictureCategory } from "../../entity/user/user_picture_category.entity";
 import { interestRepo } from "../misc/interest";
 import { Gender, Privacy } from "../../entity";
-import { getFollowers, readUserProfile } from "./static";
+import { getFollowers, getFollowing, readUserProfile } from "./static";
 
 export const userInterestRepo = Database.getRepository(UserInterest)
 export const userPictureRepo = Database.getRepository(UserPicture)
@@ -134,6 +134,14 @@ class userProfileController {
 		const followers = await getFollowers(user)
 
 		goodRequest(res, { followers })
+	}
+
+	async getMyFollowing(req: Request, res: Response) {
+		const user = res.locals.user as User
+
+		const following = await getFollowing(user)
+
+		goodRequest(res, { following })
 	}
 
 	async followUser(req: Request, res: Response) {

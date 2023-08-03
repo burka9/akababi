@@ -45,8 +45,8 @@ export default class UserRoute extends RouteConfig {
 		 */
 		this.profile.route("/")
 			.get(query('user_sub').isString().notEmpty().escape(), profile.readOtherProfile)
-			
-			
+
+
 		/**
 		 * URL: api/user/profile/self
 		 * 	- GET: Return user profile data
@@ -122,8 +122,31 @@ export default class UserRoute extends RouteConfig {
 		 * 				- user_sub
 		 */
 		this.profile.route("/follower")
-				.get(jwtCheck, IncludeUser, profile.getMyFollowers)
-				.post(jwtCheck, IncludeUser, body('user_sub').isString().notEmpty().escape(), profile.followUser)
-				.delete(jwtCheck, IncludeUser, body('user_sub').isString().notEmpty().escape(), profile.unfollowUser)
+			.get(jwtCheck, IncludeUser, profile.getMyFollowers)
+			.post(jwtCheck, IncludeUser, body('user_sub').isString().notEmpty().escape(), profile.followUser)
+			.delete(jwtCheck, IncludeUser, body('user_sub').isString().notEmpty().escape(), profile.unfollowUser)
+
+		/**
+		 * URL: api/user/profile/following
+		 * 	- GET: get list of people I follow
+		 * 			- jwt check
+		 * 			- include user
+		 * 
+		 * 	- POST: follow a user
+		 * 			- jwt check
+		 * 			- include user
+		 * 			- body validation: body
+		 * 				- user_sub
+		 * 
+		 * 	- DELETE: unfollow a user
+		 * 			- jwt check
+		 * 			- include user
+		 * 			- body validation: body
+		 * 				- user_sub
+		 */
+		this.profile.route("/following")
+			.get(jwtCheck, IncludeUser, profile.getMyFollowing)
+			.post(jwtCheck, IncludeUser, body('user_sub').isString().notEmpty().escape(), profile.followUser)
+			.delete(jwtCheck, IncludeUser, body('user_sub').isString().notEmpty().escape(), profile.unfollowUser)
 	} // configure routes
 }

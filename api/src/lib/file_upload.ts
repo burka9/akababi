@@ -17,3 +17,9 @@ const storage = multer.diskStorage({
 })
 
 export const upload = multer({ storage })
+
+export type FileObject = {
+	image: Express.Multer.File[],
+	audio: Express.Multer.File[],
+	video: Express.Multer.File[],
+}

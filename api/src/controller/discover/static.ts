@@ -32,6 +32,7 @@ export default {
 	discoverPost: async ({ longitude, latitude }: LocationType, radius: number): Promise<Post[]> => {
 		return await postRepo
 			.createQueryBuilder("post")
+			.leftJoinAndSelect("post.category", "category")
 			.leftJoin("post.user", "user")
 			.addSelect(["user.sub"])
 			.where("ST_Distance_Sphere(post.location, ST_GeomFromText(:point, 4326)) <= :radius", {

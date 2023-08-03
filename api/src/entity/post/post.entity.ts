@@ -120,7 +120,7 @@ export class Post {
 	@OneToMany(() => SharedPost, sharedPost => sharedPost.post)
 	shares: SharedPost[];
 
-	@OneToOne(() => CategoryTag)
+	@ManyToOne(() => CategoryTag, categoryTag => categoryTag.posts)
 	@JoinColumn({
 		name: "category_tag_id",
 	})
