@@ -21,7 +21,7 @@ export const LocationOptions: ColumnOptions = {
 			return { longitude, latitude }
 		},
 		to({ longitude, latitude }: { longitude: number, latitude: number}) {
-			return `POINT(${latitude} ${longitude})`
+			return `POINT(${longitude} ${latitude})`
 		},
 	},
 }

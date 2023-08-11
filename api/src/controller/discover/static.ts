@@ -12,7 +12,7 @@ export default {
 			.leftJoinAndSelect("user_profile.profilePicture", "profile_picture")
 			.leftJoinAndSelect("profile_picture.picture", "user_picture")
 			.where("ST_Distance_Sphere(user.location, ST_GeomFromText(:point, 4326)) <= :radius", {
-				point: `POINT(${latitude} ${longitude})`,
+				point: `POINT(${longitude} ${latitude})`,
 				radius
 			})
 			.getMany()
@@ -36,7 +36,7 @@ export default {
 			.leftJoin("post.user", "user")
 			.addSelect(["user.sub"])
 			.where("ST_Distance_Sphere(post.location, ST_GeomFromText(:point, 4326)) <= :radius", {
-				point: `POINT(${latitude} ${longitude})`,
+				point: `POINT(${longitude} ${latitude})`,
 				radius
 			})
 			.orderBy("post.createdAt", "DESC")
