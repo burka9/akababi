@@ -16,6 +16,13 @@ import DiscoverRoute from './routes/discover.route'
 import { incomingRequestHandler } from './middleware/incoming_request_handler'
 import PostRoute from './routes/post.route'
 import SMSRoute from './routes/sms.route'
+import { Server } from 'socket.io'
+import { ClientToServer } from './socket/client_to_server'
+import { ServerToClient } from './socket/server_to_client'
+import { InterServer } from './socket/inter_server'
+import { SocketData } from './socket/socket_data'
+import socket from './socket'
+import MessageRoute from './routes/message.route'
 
 const routes: Array<RouteConfig> = []
 
@@ -55,6 +62,7 @@ routes.push(new MiscRoute(app))
 routes.push(new UserRoute(app))
 routes.push(new DiscoverRoute(app))
 routes.push(new PostRoute(app))
+routes.push(new MessageRoute(app))
 
 
 
@@ -68,9 +76,19 @@ app.use(errorHandler)
 const server = createServer(app)
 
 
+// socket configuration
+const io = new Server<ClientToServer, ServerToClient, InterServer, SocketData>(server, {
+	cors: {
+		origin: "http://localhost:5173"
+	}
+})
+
+
 const SERVER_CALLBACK = () => {
 	logger.info(`server started `)
 	logger.debug(`listening on ${SERVER.HOST}:${SERVER.PORT}`)
+
+	socket(io)
 
 	routes.forEach(route => logger.info(`Route configured: ${route.name}`))
 }

@@ -35,6 +35,6 @@ export class NoLocation extends error {
 
 export class NoItem extends error {
 	constructor(item = "Item") {
-		super(`Mo ${item} Found`)
+		super(`No ${item} Found`)
 	}
 }

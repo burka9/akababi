@@ -1,6 +1,7 @@
 import { BeforeInsert, BeforeUpdate, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { User } from "../user/user.entity";
 import { Notification } from "./notification.entity";
+import { LocationOptions, LocationType } from "..";
 
 @Entity()
 export class Message {
@@ -14,31 +15,39 @@ export class Message {
 	})
 	createdAt: Date;
 
-	@Column()
+	@Column({
+		name: "text_message"
+	})
 	textMessage: string;
 
 	@Column({
+		type: "simple-json",
 		name: "picture_message",
 		nullable: true
 	})
-	pictureMessage: string;
+	pictureMessage: string[];
 
 	@Column({
+		type: "simple-json",
 		name: "audio_message",
 		nullable: true
 	})
-	audioMessage: string;
+	audioMessage: string[];
 
 	@Column({
+		type: "simple-json",
 		name: "video_message",
 		nullable: true
 	})
-	videoMessage: string;
+	videoMessage: string[];
 
 	@Column({
 		default: false
 	})
 	is_read: boolean;
+
+	@Column(LocationOptions)
+	location: LocationType;
 
 
 	/**
