@@ -68,13 +68,13 @@ export class Message {
 	/**
 	 * Relations
 	 */
-	@ManyToOne(() => User, user => user.sentMessages)
+	@ManyToOne(() => User, user => user.sentMessages, { onDelete: "CASCADE" })
 	@JoinColumn({
 		name: "from_user_id"
 	})
 	from: User;
 
-	@ManyToOne(() => User, user => user.receivedMessages)
+	@ManyToOne(() => User, user => user.receivedMessages, { onDelete: "CASCADE" })
 	@JoinColumn({
 		name: "to_user_id"
 	})

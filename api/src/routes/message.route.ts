@@ -87,5 +87,66 @@ export default class MessageRoute extends RouteConfig {
 				text: { isString: true, notEmpty: true, optional: true, escape: true },
 				message_id: { isString: true, notEmpty: true, escape: true },
 			}), message.replyToMessage)
+
+		/**
+		 * URL: api/message/forward
+		 * 	- POST: forward a message
+		 * 			- jwt check
+		 * 			- include user
+		 * 			- body validation: check schema
+		 * 				- to
+		 * 				- message_id
+		 */
+		this.router.route("/forward")
+			.post(jwtCheck, IncludeUser, checkSchema({
+				to: { isString: true, notEmpty: true, escape: true },
+				message_id: { isString: true, notEmpty: true, escape: true },
+			}), message.forwardMessage)
+
+		/**
+		 * URL: api/message/delete
+		 * 	- DELETE: delete a message
+		 * 			- jwt check
+		 * 			- include user
+		 * 			- body validation: check schema
+		 * 				- message_id
+		 */
+		this.router.route("/delete")
+			.delete(jwtCheck, IncludeUser, checkSchema({
+				message_id: { isString: true, notEmpty: true, escape: true },
+			}), message.deleteMessage)
+
+		/**
+		 * URL: api/message/edit
+		 * 	- PUT: edit a message
+		 * 			- jwt check
+		 * 			- include user
+		 * 			- multer multiple file upload (image, audio, video)
+		 * 			- body validation: check schema
+		 * 				- message_id
+		 * 				- text
+		 */
+		this.router.route("/edit")
+			.put(jwtCheck, IncludeUser, upload.fields([
+				{ name: 'image', maxCount: 1 },
+				{ name: 'audio', maxCount: 1 },
+				{ name: 'video', maxCount: 1 },
+			]), checkSchema({
+				message_id: { isString: true, notEmpty: true, escape: true },
+				text: { isString: true, notEmpty: true, optional: true, escape: true },
+			}), message.editMessage)
+
+		/**
+		 * URL: api/message/read
+		 * 	- POST: mark a message as read
+		 * 			- jwt check
+		 * 			- include user
+		 * 			- body validation: check schema
+		 * 				- message_id
+		 */
+		this.router.route("/read")
+			.post(jwtCheck, IncludeUser, checkSchema({
+				message_id: { isString: true, notEmpty: true, escape: true },
+			}), message.markAsRead)
 	}
 }

@@ -10,15 +10,22 @@ export const newMessage = (
 	text?: string,
 	files?: FileObject,
 	forwardFrom?: Message | null,
-	replyTo?: Message | null
+	replyTo?: Message | null,
+	prev_message?: Message,
 ): Message => {
-	const message = new Message()
-	message.audioMessage = []
-	message.videoMessage = []
-	message.pictureMessage = []
-	message.location = location
-	message.from = user
-	message.to = recipient
+	let message: Message
+
+	if (prev_message) {
+		message = prev_message
+	} else {
+		message = new Message()
+		message.audioMessage = []
+		message.videoMessage = []
+		message.pictureMessage = []
+		message.location = location
+		message.from = user
+		message.to = recipient
+	}
 
 	if (text) {
 		message.textMessage = text
