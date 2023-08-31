@@ -11,11 +11,20 @@ const radius = APP.DISCOVER_RADIUS * 1000 // in kilometers
 class DiscoverController {
 	async discoverAll(req: Request, res: Response) {
 		const location = res.locals.location
+		let postLimit = Number(req.query.postLimit)
+		let lastPostId = Number(req.query.lastPostId)
+
+		if (isNaN(postLimit)) postLimit = 10
 
 		const users = await Static.discoverUser(location, radius)
 		const posts = await Static.discoverPost(location, radius)
 
-		goodRequest(res, { users, posts })
+		const index = posts.findIndex(post => post.id === lastPostId)
+
+		goodRequest(res, {
+			users,
+			posts: posts.slice(index === -1 ? 0 : index, postLimit)
+		})
 	}
 
 	async discoverUser(req: Request, res: Response) {
@@ -33,10 +42,18 @@ class DiscoverController {
 
 	async discoverPost(req: Request, res: Response) {
 		const location = res.locals.location
+		let postLimit = Number(req.query.postLimit)
+		let lastPostId = Number(req.query.lastPostId)
+
+		if (isNaN(postLimit)) postLimit = 10
 
 		const posts = await Static.discoverPost(location, radius)
 
-		goodRequest(res, { posts })
+		const index = posts.findIndex(post => post.id === lastPostId)
+
+		goodRequest(res, {
+			posts: posts.slice(index === -1 ? 0 : index, postLimit)
+		})
 	}
 }
 

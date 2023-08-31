@@ -42,8 +42,6 @@ class MessageController {
 			`)
 		]
 
-		console.log(conversations)
-
 		conversations.map((conversation: any) => {
 			conversation.from = { sub: conversation.from_user }
 			conversation.to = { sub: conversation.to_user }

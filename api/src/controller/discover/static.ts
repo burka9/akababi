@@ -19,7 +19,7 @@ export default {
 
 		return users.map((user: User | any) => {
 			if (user.profile.profilePicture.privacy === Privacy.Everyone)
-				user.profilePicture = user.profile.profilePicture.picture ? user.profile.profilePicture.picture.path : null	
+				user.profilePicture = user.profile.profilePicture.picture ? user.profile.profilePicture.picture.path : null
 
 			user.gender = user.profile.gender
 			user.firstName = user.profile.firstName
@@ -34,7 +34,11 @@ export default {
 			.createQueryBuilder("post")
 			.leftJoinAndSelect("post.category", "category")
 			.leftJoin("post.user", "user")
-			.addSelect(["user.sub"])
+			.leftJoin("post.reactions", "reaction")
+			.leftJoin("reaction.user", "user_reaction")
+			.leftJoin("post.comments", "comment")
+			.leftJoin("reaction.user", "user_comment")
+			.addSelect(["user.sub", "reaction", "user_reaction", "user_reaction.sub", "comment", "user_comment", "user_comment.sub"])
 			.where("ST_Distance_Sphere(post.location, ST_GeomFromText(:point, 4326)) <= :radius", {
 				point: `POINT(${longitude} ${latitude})`,
 				radius

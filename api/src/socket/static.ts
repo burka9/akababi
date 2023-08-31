@@ -1,8 +1,15 @@
 import { Socket } from "socket.io";
 import disconnect from "./events/disconnect";
-import discover_online_users from "./events/discover_online_users";
+import { User } from "../entity/user/user.entity";
+import { ConnectedUsers } from ".";
+import check_online_user from "./events/check_online_user";
+import { io } from "..";
 
-export const implementListener = (socket: Socket) => {
+export const implementListener = (socket: Socket, user: User, connectedUsers: ConnectedUsers[]) => {
 	socket.on("disconnect", () => disconnect(socket))
-	socket.on("discover_online_users", (...data) => discover_online_users(socket, data))
+
+	socket.on("check_online_users", async (data: string[]) => check_online_user(socket, data, user, connectedUsers))
+	socket.on('is_typing', (data: string) => {
+		io.to(data).emit('is_typing')
+	})
 }

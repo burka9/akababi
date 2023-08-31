@@ -1,8 +1,9 @@
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Post } from "./post.entity";
 import { User } from "../user/user.entity";
 import { ReactionTag } from "./reaction_tag.entity";
 import { LocationOptions, LocationType } from "..";
+import { Notification } from "../misc/notification.entity";
 
 @Entity()
 export class PostReaction {
@@ -30,7 +31,7 @@ export class PostReaction {
 	/**
 	 * Relations
 	 */
-	@OneToOne(() => ReactionTag)
+	@ManyToOne(() => ReactionTag)
 	@JoinColumn({
 		name: "reaction_tag_id"
 	})
@@ -47,4 +48,7 @@ export class PostReaction {
 		name: "user_id"
 	})
 	user: User;
+
+	@OneToMany(() => Notification, notification => notification.postReaction)
+	notifications: Notification[];
 }

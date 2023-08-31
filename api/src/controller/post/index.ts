@@ -28,6 +28,16 @@ class PostController {
 		})
 	}
 
+	async viewPost(req: Request, res: Response) {
+		const post = res.locals.post as Post
+
+		post.views ++
+
+		await postRepo.save(post)
+
+		goodRequest(res)
+	}
+
 	async createPost(req: Request, res: Response) {
 		const user = res.locals.user as User
 		const result = validationResult(req)

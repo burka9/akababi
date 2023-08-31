@@ -6,7 +6,8 @@ import { Post } from "../../entity/post/post.entity"
 import { goodRequest } from "../../lib/response"
 import { PostComment } from "../../entity/post/post_comment.entity"
 import { Database } from "../../database"
-import { LocationType } from "../../entity"
+import { LocationType, NotificationType } from "../../entity"
+import { newNotification } from "../notification/static"
 
 export const postCommentRepo = Database.getRepository(PostComment)
 
@@ -44,6 +45,11 @@ class PostCommentController {
 		}
 
 		await postCommentRepo.save(comment)
+
+		// send notification to post owner
+		if (post.user.sub !== user.sub) {
+			await newNotification(post.user, NotificationType.PostComment, user, post, comment)
+		}
 
 		goodRequest(res)
 	}

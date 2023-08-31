@@ -62,6 +62,16 @@ export default class PostRoute extends RouteConfig {
 
 
 		/**
+		 * URL: api/post/view
+		 * 	- GET: increment the view count of a post
+		 * 			- include post
+		 * 
+		 */
+		this.router.route("/view")
+			.get(IncludePost, post.viewPost)
+
+
+		/**
 		 * URL: api/post/self
 		 * 	- GET: Return the user's own posts
 		 * 			- jwt check

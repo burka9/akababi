@@ -50,6 +50,12 @@ export class User {
 	})
 	onlineStatusPrivacy: Privacy;
 
+	@Column({
+		name: "last_online",
+		nullable: true,
+	})
+	lastOnline: Date;
+
 
 	/**
 	 * Methods

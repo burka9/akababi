@@ -1,4 +1,4 @@
-import express from 'express'
+import express, { Request, Response } from 'express'
 import 'express-async-errors'
 import helmet from 'helmet'
 import { createServer } from 'http'
@@ -17,12 +17,14 @@ import { incomingRequestHandler } from './middleware/incoming_request_handler'
 import PostRoute from './routes/post.route'
 import SMSRoute from './routes/sms.route'
 import { Server } from 'socket.io'
-import { ClientToServer } from './socket/client_to_server'
-import { ServerToClient } from './socket/server_to_client'
-import { InterServer } from './socket/inter_server'
-import { SocketData } from './socket/socket_data'
 import socket from './socket'
 import MessageRoute from './routes/message.route'
+import NotificationRoute from './routes/notification.route'
+import { jwtCheck } from './middleware/jwt_check'
+import { IncludeLocation } from './middleware/include_location'
+import { IncludeUser } from './middleware/include_user'
+import { User } from './entity/user/user.entity'
+import { LocationType } from './entity'
 
 const routes: Array<RouteConfig> = []
 
@@ -63,6 +65,7 @@ routes.push(new UserRoute(app))
 routes.push(new DiscoverRoute(app))
 routes.push(new PostRoute(app))
 routes.push(new MessageRoute(app))
+routes.push(new NotificationRoute(app))
 
 
 
@@ -77,7 +80,7 @@ const server = createServer(app)
 
 
 // socket configuration
-const io = new Server<ClientToServer, ServerToClient, InterServer, SocketData>(server, {
+export const io = new Server(server, {
 	cors: {
 		origin: "http://localhost:5173"
 	}

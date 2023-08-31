@@ -5,8 +5,7 @@ import { implementListener } from "./static";
 
 export interface ConnectedUsers {
 	sub: string;
-	id: string;
-	connectedAt: Date;
+	socketId: string;
 }
 
 export const connectedUsers: ConnectedUsers[] = []
@@ -28,14 +27,14 @@ export default (io: Server) => {
 			// add to connected list
 			connectedUsers.push({
 				sub: user.sub,
-				id: socket.id,
-				connectedAt: new Date()
+				socketId: socket.id,
 			})
 
 			// listeners
-			implementListener(socket)
+			implementListener(socket, user, connectedUsers)
 		} catch (err: any) {
 			logger.error(`socket error: ${err.message}`)
+			console.error(err)
 			socket.disconnect(true)
 		}
 	})
