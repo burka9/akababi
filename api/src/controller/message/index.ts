@@ -49,6 +49,38 @@ class MessageController {
 			delete conversation.to_user
 		})
 
+		for await (const conversation of conversations) {
+			const lastMessage_1 = await messageRepo.findOne({
+				where: {
+					from: { sub: conversation.from.sub },
+					to: { sub: conversation.to.sub }
+				},
+				order: {
+					createdAt: "DESC"
+				},
+			})
+
+			const lastMessage_2 = await messageRepo.findOne({
+				where: {
+					from: { sub: conversation.to.sub },
+					to: { sub: conversation.from.sub }
+				},
+				order: {
+					createdAt: "DESC"
+				},
+			})
+
+			if (lastMessage_1 && !lastMessage_2) {
+				conversation.lastMessage = lastMessage_1
+			} else if (!lastMessage_1 && lastMessage_2) {
+				conversation.lastMessage = lastMessage_2
+			} else if (lastMessage_1 && lastMessage_2) {
+				conversation.lastMessage = new Date(lastMessage_1.createdAt) > new Date(lastMessage_2.createdAt) ? lastMessage_1 : lastMessage_2
+			} else {
+				conversation.lastMessage = null
+			}
+		}
+
 		goodRequest(res, { conversations })
 	}
 
@@ -57,7 +89,9 @@ class MessageController {
 		if (!result.isEmpty()) throw new BadFields()
 
 		const user = res.locals.user as User
-		const { to } = matchedData(req)
+		const { to, limit: messageLimit } = matchedData(req)
+
+		const limit = messageLimit ? parseInt(messageLimit) : 10
 
 		const recipient = await userRepo.findOneBy({ sub: to })
 		if (!recipient) throw new NoItem("Recipient")
@@ -85,7 +119,9 @@ class MessageController {
 			})
 		]
 
-		goodRequest(res, { conversation })
+		goodRequest(res, {
+			conversation: conversation.slice(0, limit)
+		})
 	}
 
 	async sendMessage(req: Request, res: Response) {
