@@ -9,8 +9,9 @@ import { DEFAULT_CATEGORIES, userFollowerRepo, userRepo } from ".";
 import { UserPicture } from "../../entity/user/user_picture.entity";
 import { UserPictureCategory } from "../../entity/user/user_picture_category.entity";
 import { interestRepo } from "../misc/interest";
-import { Gender, Privacy } from "../../entity";
+import { Gender, NotificationType, Privacy } from "../../entity";
 import { getFollowers, getFollowing, readUserProfile } from "./static";
+import { newNotification } from "../notification/static";
 
 export const userInterestRepo = Database.getRepository(UserInterest)
 export const userPictureRepo = Database.getRepository(UserPicture)
@@ -162,6 +163,9 @@ class userProfileController {
 		})
 
 		await userFollowerRepo.save(row)
+
+		// send notification to the user that is followed
+		await newNotification(user, NotificationType.NewFollower, following)
 
 		goodRequest(res)
 	}

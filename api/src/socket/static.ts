@@ -10,6 +10,6 @@ export const implementListener = (socket: Socket, user: User, connectedUsers: Co
 
 	socket.on("check_online_users", async (data: string[]) => check_online_user(socket, data, user, connectedUsers))
 	socket.on('is_typing', (data: string) => {
-		io.to(data).emit('is_typing')
+		io.to(data).emit('is_typing', user.sub)
 	})
 }

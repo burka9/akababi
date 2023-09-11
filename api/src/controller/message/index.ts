@@ -8,6 +8,8 @@ import { userRepo } from "../user";
 import { goodRequest } from "../../lib/response";
 import { newMessage } from "./static";
 import { FileObject } from "../../lib/file_upload";
+import { newNotification } from "../notification/static";
+import { NotificationType } from "../../entity";
 
 export const messageRepo = Database.getRepository(Message)
 
@@ -30,12 +32,24 @@ class MessageController {
 			// 	.getMany(),
 			... await messageRepo.
 				query(`
-			SELECT MIN(message.created_at) AS created_at,
+			SELECT
+				MIN(message.created_at) AS created_at,
       	CASE WHEN from_user.user_id <= to_user.user_id THEN from_user.user_id ELSE to_user.user_id END AS from_user,
-      	CASE WHEN from_user.user_id <= to_user.user_id THEN to_user.user_id ELSE from_user.user_id END AS to_user
+      	CASE WHEN from_user.user_id <= to_user.user_id THEN to_user.user_id ELSE from_user.user_id END AS to_user,
+
+				from_profile.first_name AS from_first_name,
+				from_profile.last_name AS from_last_name,
+				from_user_picture.path AS from_profile_picture
+				
 			FROM message
+
 			LEFT JOIN user from_user ON message.from_user_id = from_user.user_id
+				LEFT JOIN user_profile from_profile ON from_profile.user_profile_id = from_user.user_profile_id
+				LEFT JOIN profile_picture from_profile_picture ON from_profile_picture.profile_picture_id = from_profile.profile_picture_id
+				LEFT JOIN user_picture from_user_picture ON from_user_picture.user_picture_id = from_profile_picture.user_picture_id
+
 			LEFT JOIN user to_user ON message.to_user_id = to_user.user_id
+
 			WHERE message.from_user_id = "${user.sub}"
    			OR message.to_user_id = "${user.sub}"
 			GROUP BY from_user, to_user;
@@ -45,8 +59,23 @@ class MessageController {
 		conversations.map((conversation: any) => {
 			conversation.from = { sub: conversation.from_user }
 			conversation.to = { sub: conversation.to_user }
+
+			const details = {
+				firstName: conversation.from_first_name,
+				lastName: conversation.from_last_name,
+				profilePicture: conversation.from_profile_picture
+			}
+			
+			if (conversation.from === user.sub)
+				conversation.to = { ...conversation.to, ...details }
+			else
+				conversation.from = { ...conversation.from, ...details }
+			
 			delete conversation.from_user
 			delete conversation.to_user
+			delete conversation.from_first_name
+			delete conversation.from_last_name
+			delete conversation.from_profile_picture
 		})
 
 		for await (const conversation of conversations) {
@@ -57,7 +86,7 @@ class MessageController {
 				},
 				order: {
 					createdAt: "DESC"
-				},
+				}
 			})
 
 			const lastMessage_2 = await messageRepo.findOne({
@@ -67,7 +96,7 @@ class MessageController {
 				},
 				order: {
 					createdAt: "DESC"
-				},
+				}
 			})
 
 			if (lastMessage_1 && !lastMessage_2) {
@@ -81,7 +110,7 @@ class MessageController {
 			}
 		}
 
-		goodRequest(res, { conversations })
+		goodRequest(res, { user, conversations })
 	}
 
 	async getSingleConversation(req: Request, res: Response) {
@@ -144,6 +173,9 @@ class MessageController {
 
 		await messageRepo.save(message)
 
+		// send notifcation to recipient
+		await newNotification(recipient, NotificationType.NewMessage, user, null, null, null, message)
+
 		goodRequest(res, { message })
 	}
 
@@ -177,6 +209,9 @@ class MessageController {
 
 		await messageRepo.save(message)
 
+		// send notifcation to recipient
+		await newNotification(recipient, NotificationType.NewMessage, user, null, null, null, message)
+
 		goodRequest(res, { message })
 	}
 
@@ -204,6 +239,9 @@ class MessageController {
 		)
 
 		await messageRepo.save(message)
+
+		// send notifcation to recipient
+		await newNotification(recipient, NotificationType.NewMessage, user, null, null, null, message)
 
 		goodRequest(res, { message })
 	}
