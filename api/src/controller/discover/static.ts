@@ -29,20 +29,22 @@ export default {
 			return user
 		})
 	},
-	discoverPost: async ({ longitude, latitude }: LocationType, radius: number): Promise<Post[]> => {
+	discoverPost: async ({ longitude, latitude }: LocationType, radius: number): Promise<Post[]> => {		
 		return await postRepo
 			.createQueryBuilder("post")
 			.leftJoinAndSelect("post.category", "category")
 			.leftJoin("post.user", "user")
-			.leftJoin("post.reactions", "reaction")
+			.leftJoinAndSelect("post.reactions", "reaction")
 			.leftJoin("reaction.user", "user_reaction")
-			.leftJoin("post.comments", "comment")
+			.leftJoinAndSelect("post.comments", "comment")
 			.leftJoin("reaction.user", "user_comment")
-			.addSelect(["user.sub", "reaction", "user_reaction", "user_reaction.sub", "comment", "user_comment", "user_comment.sub"])
+			.addSelect(["user.sub", "user", "user_reaction", "user_reaction.sub", "user_comment", "user_comment.sub", "shared_post.*"])
+			.leftJoinAndSelect("post.shares", "shared_post", "shared_post.post_id = post.id")
 			.where("ST_Distance_Sphere(post.location, ST_GeomFromText(:point, 4326)) <= :radius", {
 				point: `POINT(${longitude} ${latitude})`,
 				radius
 			})
+			.andWhere("post.group_id IS NULL")
 			.orderBy("post.createdAt", "DESC")
 			.getMany()
 	}

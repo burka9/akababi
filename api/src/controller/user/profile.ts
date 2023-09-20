@@ -9,7 +9,7 @@ import { DEFAULT_CATEGORIES, userFollowerRepo, userRepo } from ".";
 import { UserPicture } from "../../entity/user/user_picture.entity";
 import { UserPictureCategory } from "../../entity/user/user_picture_category.entity";
 import { interestRepo } from "../misc/interest";
-import { Gender, NotificationType, Privacy } from "../../entity";
+import { Gender, MaritalStatus, NotificationType, Privacy } from "../../entity";
 import { getFollowers, getFollowing, readUserProfile } from "./static";
 import { newNotification } from "../notification/static";
 
@@ -75,11 +75,11 @@ class userProfileController {
 		} // birthday
 
 		if (marital_status) {
-			user.profile.maritalStatus = marital_status
+			user.profile.maritalStatus = marital_status.toLowerCase()
 		} // marital status
 
 		if (nationality) {
-			user.profile.nationality = nationality
+			user.profile.nationality = nationality.toLowerCase()
 		} // nationality
 
 		if (profile_privacy) {

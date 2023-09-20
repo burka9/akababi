@@ -78,14 +78,14 @@ export default class UserRoute extends RouteConfig {
 					last_name: { notEmpty: true, optional: true, isAlpha: true, escape: true },
 					gender: {
 						notEmpty: true, optional: true, isIn: {
-							options: Object.values(Gender)
+							options: [Object.values(Gender).map(item => item.toLowerCase())]
 						},
 						escape: true
 					},
 					birthday: { notEmpty: true, optional: true, isDate: true, escape: true },
 					marital_status: {
 						notEmpty: true, optional: true, isIn: {
-							options: Object.values(MaritalStatus)
+							options: [Object.values(MaritalStatus).map(item => item.toLowerCase())]
 						},
 						escape: true
 					},

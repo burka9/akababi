@@ -6,8 +6,10 @@ import { Post } from "../../entity/post/post.entity";
 import { User } from "../../entity/user/user.entity";
 import { categoryRepo } from "../misc/category";
 import { Database } from "../../database";
+import { SharedPost } from "../../entity/post/shared_post.entity";
 
 export const postRepo = Database.getRepository(Post)
+export const sharedPostRepo = Database.getRepository(SharedPost)
 
 class PostController {
 	async readSinglePost(req: Request, res: Response) {
@@ -73,6 +75,21 @@ class PostController {
 		}
 
 		await postRepo.save(post)
+
+		goodRequest(res)
+	}
+
+	async sharePost(req: Request, res: Response) {
+		const user = res.locals.user as User
+		const post = res.locals.post as Post
+
+		const sharedPost = new SharedPost()
+
+		sharedPost.location = res.locals.location
+		sharedPost.post = post
+		sharedPost.user = user
+
+		await sharedPostRepo.save(sharedPost)
 
 		goodRequest(res)
 	}

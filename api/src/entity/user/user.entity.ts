@@ -56,6 +56,12 @@ export class User {
 	})
 	lastOnline: Date;
 
+	@Column({
+		name: "firebase_token",
+		nullable: true
+	})
+	firebaseToken: string;
+
 
 	/**
 	 * Methods

@@ -1,15 +1,18 @@
 import { Application, Router } from "express";
 import { RouteConfig } from "../lib/route.config";
-import misc from "../controller/misc";
 import { query, body } from "express-validator"
 import interest from "../controller/misc/interest";
 import category from "../controller/misc/category";
 import reaction from "../controller/misc/reaction";
+import countryController from "../controller/misc/country";
+import cityController from "../controller/misc/city";
 
 export default class MiscRoute extends RouteConfig {
 	interest: Router;
 	category: Router;
 	reaction: Router;
+	country: Router;
+	city: Router;
 
 	constructor(app: Application) {
 		super(app, "Misc Route")
@@ -19,10 +22,14 @@ export default class MiscRoute extends RouteConfig {
 		this.interest = Router()
 		this.category = Router()
 		this.reaction = Router()
+		this.country = Router()
+		this.city = Router()
 
 		this.router.use("/interest", this.interest) // ---> api/misc/interest
 		this.router.use("/category", this.category) // ---> api/misc/category
 		this.router.use("/reaction", this.reaction) // ---> api/misc/reaction
+		this.router.use("/country", this.country) // ---> api/misc/country
+		this.router.use("/city", this.city) // ---> api/misc/city
 
 		this.app.use("/api/misc", this.router) // ---> api/misc
 	}
@@ -145,6 +152,87 @@ export default class MiscRoute extends RouteConfig {
 			.delete(
 				body("reaction_id").isNumeric().notEmpty().escape(),
 				reaction.removeReaction
+			)
+
+		
+		/**
+		 * URL: api/misc/country
+		 * 	- GET: read the list of countries
+		 * 			- query validation: query
+		 * 				- country_id: filter countries by id
+		 * 				- country_name: filter countries by name
+		 * 
+		 * 	- POST: create new country object
+		 * 			- body validation: body
+		 * 				- country_name: the name for the new object
+		 * 
+		 * 	- PUT: edit country object
+		 * 			- body validation: body
+		 * 				- country_id: used to find the country object
+		 * 				- country_name: the new name for the object
+		 * 
+		 * 	- DELETE: delete country object
+		 * 			- body validation: body
+		 * 				- country_id: used to find the country object
+		 * 
+		 */
+		this.country.route("/")
+			.get(
+				query(['country_id', 'country_name']).escape(),
+				countryController.readCountry
+			)
+			.post(
+				body(["country_name"]).notEmpty().escape(),
+				countryController.createCountry
+			)
+			.put(
+				body(["country_id", "country_name"]).notEmpty().escape(),
+				countryController.updateCountry
+			)
+			.delete(
+				body("country_id").isNumeric().notEmpty().escape(),
+				countryController.removeCountry
+			)
+
+
+		/**
+		 * URL: api/misc/city
+		 * 	- GET: read the list of cities
+		 * 			- query validation: query
+		 * 				- city_id: filter cities by id
+		 * 				- city_name: filter cities by name
+		 * 
+		 * 	- POST: create new city object
+		 * 			- body validation: body
+		 * 				- city_name: the name for the new object
+		 * 				- country_id: the country id for the new object
+		 * 
+		 * 	- PUT: edit city object
+		 * 			- body validation: body
+		 * 				- city_id: used to find the city object
+		 * 				- city_name: the new name for the object
+		 * 
+		 * 	- DELETE: delete city object
+		 * 			- body validation: body
+		 * 				- city_id: used to find the city object
+		 * 
+		 */
+		this.city.route("/")
+			.get(
+				query(['city_id', 'city_name']).escape(),
+				cityController.readCity
+			)
+			.post(
+				body(["city_name", "country_id"]).notEmpty().escape(),
+				cityController.createCity
+			)
+			.put(
+				body(["city_id", "city_name"]).notEmpty().escape(),
+				cityController.updateCity
+			)
+			.delete(
+				body("city_id").isNumeric().notEmpty().escape(),
+				cityController.removeCity
 			)
 	}
 }

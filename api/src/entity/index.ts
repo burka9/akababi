@@ -5,7 +5,7 @@ export enum MaritalStatus {
 	InARelationship = "InARelationship",
 	Married = "Married",
 	Divorced = "Divorced",
-	Widow = "Wirdow",
+	Widow = "Widow",
 }
 
 export const LocationOptions: ColumnOptions = {

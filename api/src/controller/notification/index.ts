@@ -5,6 +5,7 @@ import { Database } from "../../database"
 import { Notification } from "../../entity/misc/notification.entity"
 import { goodRequest } from "../../lib/response"
 import { matchedData, validationResult } from "express-validator"
+import { userRepo } from "../user"
 
 export const notificationRepo = Database.getRepository(Notification)
 
@@ -124,6 +125,20 @@ class NotificationController {
 		if (!notification) throw new Unauthorized()
 
 		await notificationRepo.remove(notification)
+
+		goodRequest(res)
+	}
+
+	async updateFirebaseToken(req: Request, res: Response) {
+		const result = validationResult(req)
+		if (!result.isEmpty()) throw new BadFields()
+		
+		const user = res.locals.user as User
+		const { firebase_token } = matchedData(req)
+
+		user.firebaseToken = firebase_token
+
+		await userRepo.save(user)
 
 		goodRequest(res)
 	}

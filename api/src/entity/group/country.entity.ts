@@ -1,7 +1,12 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { City } from "./city.entity";
 
 @Entity()
 export class Country {
+	constructor(name: string) {
+		this.name = name;
+	}
+
 	@PrimaryGeneratedColumn({
 		name: "country_id"
 	})
@@ -10,7 +15,7 @@ export class Country {
 	@Column({
 		name: "original_name"
 	})
-	originalName: string;
+	name: string;
 
 	@Column({
 		name: "translated_name",
@@ -18,6 +23,11 @@ export class Country {
 	})
 	translatedName: string;
 
-	@Column()
+	@Column({
+		nullable: true
+	})
 	code: string;
+
+	@OneToMany(() => City, city => city.country)
+	cities: City[];
 }

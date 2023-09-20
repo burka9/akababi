@@ -1,7 +1,7 @@
 import { Application } from "express";
 import { RouteConfig } from "../lib/route.config";
 import notification from "../controller/notification";
-import { checkSchema } from "express-validator";
+import { body, checkSchema } from "express-validator";
 import { IncludeUser } from "../middleware/include_user";
 import { jwtCheck } from "../middleware/jwt_check";
 
@@ -51,5 +51,16 @@ export default class NotificationRoute extends RouteConfig {
 					escape: true,
 				},
 			}), notification.deleteNotification)
+
+		/**
+		 * URL: api/notification/update-firebase-token
+		 *	- GET: update firebase token
+		 *			- jwt check
+		 *			- include user
+		 *			- body validation: body
+		 *
+		 */
+		this.router.route("/update-firebase-notification")
+			.post(jwtCheck, IncludeUser, body('firebase_token').notEmpty().escape(), notification.updateFirebaseToken)
 	}
 }

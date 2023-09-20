@@ -113,5 +113,16 @@ export default class PostRoute extends RouteConfig {
 		 */
 		this.reaction.route("/")
 			.post(jwtCheck, IncludeUser, IncludePost, body('reaction_id').notEmpty().escape(), reaction.reactToPost)
+
+		/**
+		 * URL: api/post/share
+		 * 	- POST: share a post
+		 * 			- jwt check
+		 * 			- include user
+		 * 			- include post
+		 *
+		 */
+		this.router.route("/share")
+			.post(jwtCheck, IncludeUser, IncludePost, post.sharePost)
 	}
 }
