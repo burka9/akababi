@@ -4,6 +4,7 @@ import discover from "../controller/discover";
 import { IncludeLocation } from "../middleware/include_location";
 import { query } from "express-validator";
 import { Gender } from "../entity";
+import { IncludeUserWithoutAuthorization } from "../middleware/include_user";
 
 export default class DiscoverRoute extends RouteConfig {
 	constructor(app: Application) {
@@ -22,7 +23,7 @@ export default class DiscoverRoute extends RouteConfig {
 		 * 	- GET: returns users, posts and groups within a certain radius of the request
 		 */
 		this.router.route("/")
-			.get(discover.discoverAll)
+			.get(IncludeUserWithoutAuthorization, discover.discoverAll)
 
 		/**
 		 * URL: api/discover/user
@@ -31,13 +32,13 @@ export default class DiscoverRoute extends RouteConfig {
 		 * 				- gender: filter either male or female users
 		 */
 		this.router.route("/user")
-			.get(query('gender').optional().isIn(Object.values(Gender)).escape(), discover.discoverUser)
+			.get(IncludeUserWithoutAuthorization, query('gender').optional().isIn(Object.values(Gender)).escape(), discover.discoverUser)
 
 		/**
 		 * URL: api/discover/post
 		 * 	- GET: returns posts within a certain radius of the request
 		 */
 		this.router.route("/post")
-			.get(discover.discoverPost)
+			.get(IncludeUserWithoutAuthorization, discover.discoverPost)
 	}
 }

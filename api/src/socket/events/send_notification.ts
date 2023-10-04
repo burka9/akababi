@@ -11,8 +11,6 @@ import { generateNotificationText } from "../../controller/notification/static";
 
 export default function sendNotification(user: User, notification: Notification) {
 	logger.debug(`sending notification: ${notification.id}`)
-
-	console.log(connectedUsers.map(u => u.socketId + " " + u.sub))
 	
 	connectedUsers.forEach(connectedUser => {
 		if (connectedUser.sub === user.sub) {
@@ -20,6 +18,11 @@ export default function sendNotification(user: User, notification: Notification)
 			logger.debug(`notification sent to ${connectedUser.socketId}`)
 		}
 	})
+
+	// send firebase notification
+	if (user.firebaseToken) {
+		sendFirebaseNotification(user, notification)
+	}
 }
 
 const serviceAccount = readFileSync(resolve('private/serviceAccount.json'))

@@ -50,9 +50,8 @@ export class User {
 	})
 	onlineStatusPrivacy: Privacy;
 
-	@Column({
+	@CreateDateColumn({
 		name: "last_online",
-		nullable: true,
 	})
 	lastOnline: Date;
 

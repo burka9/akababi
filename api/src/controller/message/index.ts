@@ -10,6 +10,8 @@ import { newMessage } from "./static";
 import { FileObject } from "../../lib/file_upload";
 import { newNotification } from "../notification/static";
 import { NotificationType } from "../../entity";
+import { compareAsc } from "date-fns";
+import readMessage from "../../socket/events/read_message";
 
 export const messageRepo = Database.getRepository(Message)
 
@@ -17,97 +19,60 @@ class MessageController {
 	async getConversations(req: Request, res: Response) {
 		const user = res.locals.user as User
 
-		const conversations = [
-			// ...await messageRepo
-			// 	.createQueryBuilder("message")
-			// 	.select("message.createdAt")
-			// 	.leftJoin("message.from", "from_user")
-			// 	.leftJoin("message.to", "to_user")
-			// 	.addSelect("from_user.sub")
-			// 	.addSelect("to_user.sub")
-			// 	.where("message.from_user_id = :sub", { sub: user.sub })
-			// 	.orWhere('message.to_user_id = :sub', { sub: user.sub })
-			// 	.groupBy("message.to")
-			// 	.addGroupBy("message.from")
-			// 	.getMany(),
-			... await messageRepo.
-				query(`
+		const conversations = await messageRepo.query(`
 			SELECT
-				MIN(message.created_at) AS created_at,
-      	CASE WHEN from_user.user_id <= to_user.user_id THEN from_user.user_id ELSE to_user.user_id END AS from_user,
-      	CASE WHEN from_user.user_id <= to_user.user_id THEN to_user.user_id ELSE from_user.user_id END AS to_user,
+				MAX (message.created_at) AS created_at,
 
-				from_profile.first_name AS from_first_name,
-				from_profile.last_name AS from_last_name,
-				from_user_picture.path AS from_profile_picture
-				
+				JSON_OBJECT (
+					'sub', from_user.user_id,
+					'firstName', from_user_profile.first_name,
+					'lastName', from_user_profile.last_name,
+					'profilePicture', from_user_picture.path
+				) AS \`from\`,
+
+				LEAST (message.from_user_id, message.to_user_id) AS group_a,
+				GREATEST (message.from_user_id, message.to_user_id) AS group_b
 			FROM message
 
-			LEFT JOIN user from_user ON message.from_user_id = from_user.user_id
-				LEFT JOIN user_profile from_profile ON from_profile.user_profile_id = from_user.user_profile_id
-				LEFT JOIN profile_picture from_profile_picture ON from_profile_picture.profile_picture_id = from_profile.profile_picture_id
-				LEFT JOIN user_picture from_user_picture ON from_user_picture.user_picture_id = from_profile_picture.user_picture_id
+			LEFT JOIN user AS from_user ON from_user.user_id = CASE
+				WHEN message.from_user_id = "${user.sub}"
+					THEN message.to_user_id
+					ELSE message.from_user_id
+				END
 
-			LEFT JOIN user to_user ON message.to_user_id = to_user.user_id
+			LEFT JOIN user_profile AS from_user_profile
+				ON from_user_profile.user_profile_id = from_user.user_profile_id
 
-			WHERE message.from_user_id = "${user.sub}"
-   			OR message.to_user_id = "${user.sub}"
-			GROUP BY from_user, to_user;
-			`)
-		]
+			LEFT JOIN profile_picture AS from_user_profile_picture
+				ON from_user_profile_picture.profile_picture_id = from_user_profile.profile_picture_id
 
-		conversations.map((conversation: any) => {
-			conversation.from = { sub: conversation.from_user }
-			conversation.to = { sub: conversation.to_user }
+			LEFT JOIN user_picture AS from_user_picture
+				ON from_user_picture.user_picture_id = from_user_profile_picture.user_picture_id
 
-			const details = {
-				firstName: conversation.from_first_name,
-				lastName: conversation.from_last_name,
-				profilePicture: conversation.from_profile_picture
-			}
 			
-			if (conversation.from === user.sub)
-				conversation.to = { ...conversation.to, ...details }
-			else
-				conversation.from = { ...conversation.from, ...details }
-			
-			delete conversation.from_user
-			delete conversation.to_user
-			delete conversation.from_first_name
-			delete conversation.from_last_name
-			delete conversation.from_profile_picture
-		})
+			WHERE to_user_id = "${user.sub}" OR from_user_id = "${user.sub}"
+			GROUP BY group_a, group_b
+		`)
 
+		// get last message for each conversation
 		for await (const conversation of conversations) {
-			const lastMessage_1 = await messageRepo.findOne({
-				where: {
-					from: { sub: conversation.from.sub },
-					to: { sub: conversation.to.sub }
-				},
+			const fromMessage = await messageRepo.findOne({
+				where: { from: { sub: conversation.from.sub }, to: { sub: user.sub }},
+				order: {
+					createdAt: "DESC"
+				}
+			})
+			const toMessage = await messageRepo.findOne({
+				where: { from: { sub: user.sub }, to: { sub: conversation.from.sub }},
 				order: {
 					createdAt: "DESC"
 				}
 			})
 
-			const lastMessage_2 = await messageRepo.findOne({
-				where: {
-					from: { sub: conversation.to.sub },
-					to: { sub: conversation.from.sub }
-				},
-				order: {
-					createdAt: "DESC"
-				}
-			})
-
-			if (lastMessage_1 && !lastMessage_2) {
-				conversation.lastMessage = lastMessage_1
-			} else if (!lastMessage_1 && lastMessage_2) {
-				conversation.lastMessage = lastMessage_2
-			} else if (lastMessage_1 && lastMessage_2) {
-				conversation.lastMessage = new Date(lastMessage_1.createdAt) > new Date(lastMessage_2.createdAt) ? lastMessage_1 : lastMessage_2
-			} else {
-				conversation.lastMessage = null
-			}
+			if (fromMessage && !toMessage) conversation.lastMessage = fromMessage
+			else if (!fromMessage && toMessage) conversation.lastMessage = toMessage
+			else if (fromMessage && toMessage) conversation.lastMessage = compareAsc(new Date(fromMessage.createdAt), new Date(toMessage.createdAt)) === 1 ? fromMessage : toMessage
+			else conversation.lastMessage = null
 		}
 
 		goodRequest(res, { user, conversations })
@@ -125,32 +90,55 @@ class MessageController {
 		const recipient = await userRepo.findOneBy({ sub: to })
 		if (!recipient) throw new NoItem("Recipient")
 
-		const conversation = [
-			...await messageRepo.find({
-				where: {
-					from: { sub: user.sub },
-					to: { sub: recipient.sub }
-				},
-				order: {
-					createdAt: "DESC"
-				},
-				relations: ["from", "from.profile", "to", "to.profile", "replyTo"]
-			}),
-			...await messageRepo.find({
-				where: {
-					from: { sub: recipient.sub },
-					to: { sub: user.sub }
-				},
-				order: {
-					createdAt: "DESC"
-				},
-				relations: ["from", "from.profile", "to", "to.profile", "replyTo"]
-			})
-		]
+		const conversation = await messageRepo.query(`
+			SELECT
+				message.created_at AS created_at,
+			
+				JSON_OBJECT (
+					'id', message.message_id,
+					'createdAt', message.created_at,
+					'isRead', message.is_read,
+					'forwardFrom', message.forward_from_message_id,
+					'replyTo', message.reply_to_message_id,
+					'pictureMessage', message.picture_message,
+					'audioMessage', message.audio_message,
+					'videoMessage', message.video_message,
+					'textMessage', message.text_message
+				) as message,
 
-		goodRequest(res, {
-			conversation: conversation.slice(0, limit)
+				JSON_OBJECT (
+					'sub', from_user.user_id,
+					'firstName', from_user_profile.first_name,
+					'lastName', from_user_profile.last_name,
+					'profilePicture', from_user_picture.path
+				) AS \`from\`
+			FROM message
+
+			LEFT JOIN user AS from_user
+				ON from_user.user_id = message.from_user_id
+
+			LEFT JOIN user_profile AS from_user_profile
+				ON from_user_profile.user_profile_id = from_user.user_profile_id
+
+			LEFT JOIN profile_picture AS from_user_profile_picture
+				ON from_user_profile_picture.profile_picture_id = from_user_profile.profile_picture_id
+
+			LEFT JOIN user_picture AS from_user_picture
+				ON from_user_picture.user_picture_id = from_user_profile_picture.user_picture_id
+
+			WHERE
+				(message.from_user_id = "${user.sub}" AND message.to_user_id="${recipient.sub}")
+				OR
+				(message.from_user_id = "${recipient.sub}" AND message.to_user_id="${user.sub}")
+
+			ORDER BY message.created_at DESC
+		`)
+		
+		conversation.forEach((c: any) => {
+			if (c.from.sub === user.sub) delete c.from
 		})
+		
+		goodRequest(res, { conversation })
 	}
 
 	async sendMessage(req: Request, res: Response) {
@@ -260,6 +248,9 @@ class MessageController {
 
 		message.is_read = true
 		await messageRepo.save(message)
+
+		// notify sender about the read status
+		readMessage(message.from.sub, message_id)
 
 		goodRequest(res, { message })
 	}
