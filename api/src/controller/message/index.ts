@@ -3,7 +3,7 @@ import { matchedData, validationResult } from "express-validator";
 import { BadFields, NoItem, error } from "../../lib/errors";
 import { User } from "../../entity/user/user.entity";
 import { Message } from "../../entity/misc/message.entity";
-import { Database } from "../../database";
+import { Database, conn } from "../../database";
 import { userRepo } from "../user";
 import { goodRequest } from "../../lib/response";
 import { newMessage } from "./static";
@@ -20,41 +20,48 @@ class MessageController {
 		const user = res.locals.user as User
 
 		const sql = `
-		SELECT
-			MAX (message.created_at) AS created_at,
+			SELECT
+				MAX (message.created_at) AS created_at,
 
-			JSON_OBJECT (
-				'sub', from_user.user_id,
-				'firstName', from_user_profile.first_name,
-				'lastName', from_user_profile.last_name,
-				'profilePicture', from_user_picture.path
-			) AS \`from\`,
+				JSON_OBJECT (
+					'sub', from_user.user_id,
+					'firstName', from_user_profile.first_name,
+					'lastName', from_user_profile.last_name,
+					'profilePicture', from_user_picture.path
+				) AS \`from\`,
 
-			LEAST (message.from_user_id, message.to_user_id) AS group_a,
-			GREATEST (message.from_user_id, message.to_user_id) AS group_b
-		FROM message
+				LEAST (message.from_user_id, message.to_user_id) AS group_a,
+				GREATEST (message.from_user_id, message.to_user_id) AS group_b
+			FROM message
 
-		LEFT JOIN user AS from_user ON from_user.user_id = CASE
-			WHEN message.from_user_id = ?
-				THEN message.to_user_id
-				ELSE message.from_user_id
-			END
+			LEFT JOIN user AS from_user ON from_user.user_id = CASE
+				WHEN message.from_user_id = "${user.sub}"
+					THEN message.to_user_id
+					ELSE message.from_user_id
+				END
 
-		LEFT JOIN user_profile AS from_user_profile
-			ON from_user_profile.user_profile_id = from_user.user_profile_id
+			LEFT JOIN user_profile AS from_user_profile
+				ON from_user_profile.user_profile_id = from_user.user_profile_id
 
-		LEFT JOIN profile_picture AS from_user_profile_picture
-			ON from_user_profile_picture.profile_picture_id = from_user_profile.profile_picture_id
+			LEFT JOIN profile_picture AS from_user_profile_picture
+				ON from_user_profile_picture.profile_picture_id = from_user_profile.profile_picture_id
 
-		LEFT JOIN user_picture AS from_user_picture
-			ON from_user_picture.user_picture_id = from_user_profile_picture.user_picture_id
+			LEFT JOIN user_picture AS from_user_picture
+				ON from_user_picture.user_picture_id = from_user_profile_picture.user_picture_id
 
-		
-		WHERE to_user_id = ? OR from_user_id = ?
-		GROUP BY group_a, group_b
-	`
+			
+			WHERE to_user_id = "${user.sub}" OR from_user_id = "${user.sub}"
+			GROUP BY group_a, group_b
+		`
 
-		const conversations = await messageRepo.query(sql, [user.sub, user.sub, user.sub])
+		// const conversations = await messageRepo.query(sql)
+		const conversations = await new Promise<any>((resolve, reject) => {
+			conn.execute(sql, (err, rows, fields) => {
+				if (err) reject(err)
+
+				resolve(rows)
+			})
+		})
 
 		// get last message for each conversation
 		for await (const conversation of conversations) {
@@ -75,6 +82,9 @@ class MessageController {
 			else if (!fromMessage && toMessage) conversation.lastMessage = toMessage
 			else if (fromMessage && toMessage) conversation.lastMessage = compareAsc(new Date(fromMessage.createdAt), new Date(toMessage.createdAt)) === 1 ? fromMessage : toMessage
 			else conversation.lastMessage = null
+
+			delete conversation.group_a
+			delete conversation.group_b
 		}
 
 		goodRequest(res, { user, conversations })
@@ -114,29 +124,35 @@ class MessageController {
 				'lastName', from_user_profile.last_name,
 				'profilePicture', from_user_picture.path
 			) AS \`from\`
-		FROM message
+			FROM message
 
-		LEFT JOIN user AS from_user
-			ON from_user.user_id = message.from_user_id
+			LEFT JOIN user AS from_user
+				ON from_user.user_id = message.from_user_id
 
-		LEFT JOIN user_profile AS from_user_profile
-			ON from_user_profile.user_profile_id = from_user.user_profile_id
+			LEFT JOIN user_profile AS from_user_profile
+				ON from_user_profile.user_profile_id = from_user.user_profile_id
 
-		LEFT JOIN profile_picture AS from_user_profile_picture
-			ON from_user_profile_picture.profile_picture_id = from_user_profile.profile_picture_id
+			LEFT JOIN profile_picture AS from_user_profile_picture
+				ON from_user_profile_picture.profile_picture_id = from_user_profile.profile_picture_id
 
-		LEFT JOIN user_picture AS from_user_picture
-			ON from_user_picture.user_picture_id = from_user_profile_picture.user_picture_id
+			LEFT JOIN user_picture AS from_user_picture
+				ON from_user_picture.user_picture_id = from_user_profile_picture.user_picture_id
 
-		WHERE
-			(message.from_user_id = ? AND message.to_user_id=?)
-			OR
-			(message.from_user_id = ? AND message.to_user_id=?)
+			WHERE
+				(message.from_user_id = "${user.sub}" AND message.to_user_id="${recipient.sub}")
+				OR
+				(message.from_user_id = "${recipient.sub}" AND message.to_user_id="${user.sub}")
 
-		ORDER BY message.created_at DESC
-	`
+			ORDER BY message.created_at DESC`
 
-		const conversation = await messageRepo.query(sql, [user.sub, recipient.sub, recipient.sub, user.sub])
+		// const conversation = await messageRepo.query(sql)
+		const conversation = await new Promise<any>((resolve, reject) => {
+			conn.execute(sql, (err, rows, fields) => {
+				if (err) reject(err)
+
+				resolve(rows)
+			})
+		})
 
 		conversation.forEach((c: any) => {
 			if (c.from.sub === user.sub) delete c.from

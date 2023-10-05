@@ -8,7 +8,7 @@ import { DATABASE, DEVELOPMENT, SERVER } from './lib/env'
 import logger from './lib/logger'
 import { RouteConfig } from './lib/route.config'
 import { errorHandler } from './middleware/error_handler'
-import { Database } from './database'
+import { Database, conn } from './database'
 import MiscRoute from './routes/misc.route'
 import UserRoute from './routes/user.route'
 import { existsSync, mkdirSync, rmSync } from 'fs'
@@ -20,11 +20,6 @@ import { Server } from 'socket.io'
 import socket from './socket'
 import MessageRoute from './routes/message.route'
 import NotificationRoute from './routes/notification.route'
-import { jwtCheck } from './middleware/jwt_check'
-import { IncludeLocation } from './middleware/include_location'
-import { IncludeUser } from './middleware/include_user'
-import { User } from './entity/user/user.entity'
-import { LocationType } from './entity'
 
 const routes: Array<RouteConfig> = []
 
@@ -120,6 +115,13 @@ Database.initialize()
 		logger.info('database connected')
 
 		uploadInit()
+
+		// connect to database using mysql
+		conn.connect(err => {
+			if (err) logger.error(`database connection failed with mysql2`)
+
+			logger.debug(`database connected with mysql2`)
+		})
 
 		server
 			.listen(SERVER.PORT, SERVER.HOST, SERVER_CALLBACK)
