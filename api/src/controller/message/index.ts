@@ -35,7 +35,7 @@ class MessageController {
 		FROM message
 
 		LEFT JOIN user AS from_user ON from_user.user_id = CASE
-			WHEN message.from_user_id = "${user.sub}"
+			WHEN message.from_user_id = ?
 				THEN message.to_user_id
 				ELSE message.from_user_id
 			END
@@ -50,11 +50,11 @@ class MessageController {
 			ON from_user_picture.user_picture_id = from_user_profile_picture.user_picture_id
 
 		
-		WHERE to_user_id = "${user.sub}" OR from_user_id = "${user.sub}"
+		WHERE to_user_id = ? OR from_user_id = ?
 		GROUP BY group_a, group_b
 	`
 
-		const conversations = await messageRepo.query(sql)
+		const conversations = await messageRepo.query(sql, [user.sub, user.sub, user.sub])
 
 		// get last message for each conversation
 		for await (const conversation of conversations) {
@@ -129,14 +129,14 @@ class MessageController {
 			ON from_user_picture.user_picture_id = from_user_profile_picture.user_picture_id
 
 		WHERE
-			(message.from_user_id = "${user.sub}" AND message.to_user_id="${recipient.sub}")
+			(message.from_user_id = ? AND message.to_user_id=?)
 			OR
-			(message.from_user_id = "${recipient.sub}" AND message.to_user_id="${user.sub}")
+			(message.from_user_id = ? AND message.to_user_id=?)
 
 		ORDER BY message.created_at DESC
 	`
 
-		const conversation = await messageRepo.query(sql)
+		const conversation = await messageRepo.query(sql, [user.sub, recipient.sub, recipient.sub, user.sub])
 
 		conversation.forEach((c: any) => {
 			if (c.from.sub === user.sub) delete c.from
