@@ -3,7 +3,7 @@ import { matchedData, validationResult } from "express-validator";
 import { BadFields, NoItem, error } from "../../lib/errors";
 import { User } from "../../entity/user/user.entity";
 import { Message } from "../../entity/misc/message.entity";
-import { Database, conn } from "../../database";
+import { Database } from "../../database";
 import { userRepo } from "../user";
 import { goodRequest } from "../../lib/response";
 import { newMessage } from "./static";
@@ -19,52 +19,38 @@ class MessageController {
 	async getConversations(req: Request, res: Response) {
 		const user = res.locals.user as User
 
-		const sql = `
+		const conversations = await messageRepo.query(`
 			SELECT
 				MAX (message.created_at) AS created_at,
 
-				JSON_OBJECT (
-					'sub', from_user.user_id,
-					'firstName', from_user_profile.first_name,
-					'lastName', from_user_profile.last_name,
-					'profilePicture', from_user_picture.path
-				) AS \`from\`,
+				message.from_user_id,
+				message.to_user_id,
 
 				LEAST (message.from_user_id, message.to_user_id) AS group_a,
 				GREATEST (message.from_user_id, message.to_user_id) AS group_b
 			FROM message
 
-			LEFT JOIN user AS from_user ON from_user.user_id = CASE
-				WHEN message.from_user_id = "${user.sub}"
-					THEN message.to_user_id
-					ELSE message.from_user_id
-				END
-
-			LEFT JOIN user_profile AS from_user_profile
-				ON from_user_profile.user_profile_id = from_user.user_profile_id
-
-			LEFT JOIN profile_picture AS from_user_profile_picture
-				ON from_user_profile_picture.profile_picture_id = from_user_profile.profile_picture_id
-
-			LEFT JOIN user_picture AS from_user_picture
-				ON from_user_picture.user_picture_id = from_user_profile_picture.user_picture_id
-
 			
 			WHERE to_user_id = "${user.sub}" OR from_user_id = "${user.sub}"
 			GROUP BY group_a, group_b
-		`
-
-		// const conversations = await messageRepo.query(sql)
-		const conversations = await new Promise<any>((resolve, reject) => {
-			conn.execute(sql, (err, rows, fields) => {
-				if (err) reject(err)
-
-				resolve(rows)
-			})
-		})
+		`)
 
 		// get last message for each conversation
 		for await (const conversation of conversations) {
+			const userSub = conversation.from_user_id === user.sub ? conversation.to_user_id : conversation.from_user_id
+
+			const from = await userRepo.findOneOrFail({
+				where: { sub: userSub },
+				relations: ["profile", "profile.profilePicture.picture"]
+			})
+
+			conversation.from = {
+				sub: from.sub,
+				firstName: from.profile.firstName,
+				lastName: from.profile.lastName,
+				profilePicture: from.profile.profilePicture?.picture?.path
+			}
+			
 			const fromMessage = await messageRepo.findOne({
 				where: { from: { sub: conversation.from.sub }, to: { sub: user.sub } },
 				order: {
@@ -85,6 +71,8 @@ class MessageController {
 
 			delete conversation.group_a
 			delete conversation.group_b
+			delete conversation.from_user_id
+			delete conversation.to_user_id
 		}
 
 		goodRequest(res, { user, conversations })
@@ -102,28 +90,28 @@ class MessageController {
 		const recipient = await userRepo.findOneBy({ sub: to })
 		if (!recipient) throw new NoItem("Recipient")
 
-		const sql = `
-		SELECT
-			message.created_at AS created_at,
-		
-			JSON_OBJECT (
-				'id', message.message_id,
-				'createdAt', message.created_at,
-				'isRead', message.is_read,
-				'forwardFrom', message.forward_from_message_id,
-				'replyTo', message.reply_to_message_id,
-				'pictureMessage', message.picture_message,
-				'audioMessage', message.audio_message,
-				'videoMessage', message.video_message,
-				'textMessage', message.text_message
-			) as message,
+		const conversation = await messageRepo.query(`
+			SELECT
+				message.created_at AS created_at,
+			
+				JSON_OBJECT (
+					'id', message.message_id,
+					'createdAt', message.created_at,
+					'isRead', message.is_read,
+					'forwardFrom', message.forward_from_message_id,
+					'replyTo', message.reply_to_message_id,
+					'pictureMessage', message.picture_message,
+					'audioMessage', message.audio_message,
+					'videoMessage', message.video_message,
+					'textMessage', message.text_message
+				) as message,
 
-			JSON_OBJECT (
-				'sub', from_user.user_id,
-				'firstName', from_user_profile.first_name,
-				'lastName', from_user_profile.last_name,
-				'profilePicture', from_user_picture.path
-			) AS \`from\`
+				JSON_OBJECT (
+					'sub', from_user.user_id,
+					'firstName', from_user_profile.first_name,
+					'lastName', from_user_profile.last_name,
+					'profilePicture', from_user_picture.path
+				) AS \`from\`
 			FROM message
 
 			LEFT JOIN user AS from_user
@@ -143,16 +131,8 @@ class MessageController {
 				OR
 				(message.from_user_id = "${recipient.sub}" AND message.to_user_id="${user.sub}")
 
-			ORDER BY message.created_at DESC`
-
-		// const conversation = await messageRepo.query(sql)
-		const conversation = await new Promise<any>((resolve, reject) => {
-			conn.execute(sql, (err, rows, fields) => {
-				if (err) reject(err)
-
-				resolve(rows)
-			})
-		})
+			ORDER BY message.created_at DESC
+		`)
 
 		conversation.forEach((c: any) => {
 			if (c.from.sub === user.sub) delete c.from
