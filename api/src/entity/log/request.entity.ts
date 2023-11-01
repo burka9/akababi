@@ -36,7 +36,7 @@ export class IncomingRequest {
 	@Column("text")
 	headers: string;
 
-	@Column()
+	@Column("text")
 	body: string;
 
 	@Column({

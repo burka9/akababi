@@ -27,6 +27,7 @@ export const Database = new DataSource({
 	legacySpatialSupport: false,
 	charset: 'utf8mb4', // Set the character set
   collation: 'utf8mb4_unicode_ci', // Set the collation
+	connectorPackage: "mysql2"
 } as MysqlConnectionOptions)
 
 export const conn = mysql2.createConnection({

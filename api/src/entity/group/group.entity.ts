@@ -19,6 +19,9 @@ export class Group {
 	@Column()
 	name: string;
 
+	@Column("text")
+	description: string;
+
 	@Column(LocationOptions)
 	location: LocationType;
 
@@ -38,6 +41,11 @@ export class Group {
 	})
 	membersPrivacy: Privacy;
 
+	@Column({
+		nullable: true
+	})
+	picture: string;
+
 
 	/**
 	 * Relations
@@ -50,6 +58,9 @@ export class Group {
 
 	@OneToOne(() => GroupRule, {
 		cascade: true
+	})
+	@JoinColumn({
+		name: "group_rule_id"
 	})
 	rule: GroupRule;
 

@@ -33,7 +33,12 @@ export const getUserInfo = async (Authorization: string): Promise<Auth0UserInfo>
 
 export const createUserIfNotExists = async (userinfo: Auth0UserInfo, location: LocationType): Promise<User> => {
 	// fetch user data from database
-	let user = await userRepo.findOne({
+	let user = OFFLINE
+	? await userRepo.findOne({
+		where: { email: userinfo.email },
+		relations: ["profile", "profile.profilePicture.picture", "pictureCategories"]
+	})
+	: await userRepo.findOne({
 		where: { sub: userinfo.sub },
 		relations: ["profile", "profile.profilePicture.picture", "pictureCategories"]
 	})

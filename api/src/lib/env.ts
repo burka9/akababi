@@ -87,5 +87,9 @@ export const GEOLOCATION = {
 	API_KEY: process.env.GEO_LOCATION_API_KEY
 }
 
+export const GOOGLE = {
+	MAPS_API_KEY: process.env.GOOGLE_MAPS_API_KEY
+}
+
 export const OFFLINE = process.env.OFFLINE === "true"
 export const OFFLINE_AUTH_URL = process.env.OFFLINE_AUTH_URL || "http://localhost:8181"
