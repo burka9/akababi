@@ -40,5 +40,12 @@ export default class DiscoverRoute extends RouteConfig {
 		 */
 		this.router.route("/post")
 			.get(IncludeUserWithoutAuthorization, discover.discoverPost)
+
+		/**
+		 * URL: api/discover/group
+		 * 	- GET: returns groups within a certain radius of the request
+		 */
+		this.router.route("/group")
+			.get(IncludeUserWithoutAuthorization, discover.discoverGroup)
 	}
 }

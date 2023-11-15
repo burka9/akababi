@@ -93,3 +93,10 @@ export const GOOGLE = {
 
 export const OFFLINE = process.env.OFFLINE === "true"
 export const OFFLINE_AUTH_URL = process.env.OFFLINE_AUTH_URL || "http://localhost:8181"
+
+export const SEED = {
+	// CONTINENT: (process.env.ROOT_SEED_FILE || "") + (process.env.CONTINENT_SEED_FILE || ""),
+	COUNTRY: (process.env.ROOT_SEED_DIR || "") + (process.env.COUNTRY_SEED_FILE || ""),
+	STATE: (process.env.ROOT_SEED_DIR || "") + (process.env.STATE_SEED_FILE || ""),
+	CITY: (process.env.ROOT_SEED_DIR || "") + (process.env.CITY_SEED_FILE || ""),
+}

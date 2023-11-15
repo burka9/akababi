@@ -1,4 +1,4 @@
-import express, { Request, Response } from 'express'
+import express from 'express'
 import 'express-async-errors'
 import helmet from 'helmet'
 import { createServer } from 'http'
@@ -20,6 +20,9 @@ import { Server } from 'socket.io'
 import socket from './socket'
 import MessageRoute from './routes/message.route'
 import NotificationRoute from './routes/notification.route'
+import GroupRoute from './routes/group.route'
+import loadData from './lib/load_data'
+
 
 const routes: Array<RouteConfig> = []
 
@@ -39,6 +42,7 @@ app.use(morgan('combined', {
 		},
 	}
 }))
+
 
 
 // static assets
@@ -61,12 +65,12 @@ routes.push(new DiscoverRoute(app))
 routes.push(new PostRoute(app))
 routes.push(new MessageRoute(app))
 routes.push(new NotificationRoute(app))
+routes.push(new GroupRoute(app))
 
 
 
 // async error handler
 app.use(errorHandler)
-
 
 
 
@@ -115,6 +119,8 @@ Database.initialize()
 		logger.info('database connected')
 
 		uploadInit()
+
+		loadData()
 
 		// connect to database using mysql
 		conn.connect(err => {

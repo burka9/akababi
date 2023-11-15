@@ -8,39 +8,15 @@ export class GroupRule {
 	})
 	id: number;
 
-	@Column({
-		type: "smallint",
-		name: "min_age",
-		unsigned: true
-	})
-	minAge: number;
+	@Column("simple-array")
+	nationality: string[];
 
-	@Column({
-		type: "smallint",
-		name: "max_age",
-		unsigned: true
-	})
-	maxAge: number;	
+	@Column("simple-array")
+	country: string[];
 
-	@Column({
-		type: "simple-array",
-		name: "eligible_nationality"
-	})
-	eligibleNationality: string[];
+	@Column("simple-array")
+	state: string[];
 
-	@Column({
-		type: "simple-array",
-		name: "exclude_nationality"
-	})
-	excludeNationality: string[];
-
-
-	/**
-	 * Relations
-	 */
-	@OneToOne(() => Group)
-	@JoinColumn({
-		name: "group_id"
-	})
-	group: Group;
+	@Column("simple-array")
+	city: string[];
 }

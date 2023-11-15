@@ -127,4 +127,7 @@ export class User {
 
 	@OneToMany(() => SavedMedia, savedMedia => savedMedia.owner)
 	savedMedias: SavedMedia[];
+
+	@OneToMany(() => Group, group => group.owner)
+	groups: Group[];
 }

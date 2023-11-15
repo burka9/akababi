@@ -1,4 +1,4 @@
-import { Column, CreateDateColumn, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { LocationOptions, LocationType, Privacy } from "..";
 import { GroupRule } from "./group_rule.entity";
 import { User } from "../user/user.entity";
@@ -22,8 +22,8 @@ export class Group {
 	@Column("text")
 	description: string;
 
-	@Column(LocationOptions)
-	location: LocationType;
+	// @Column(LocationOptions)
+	// location: LocationType;
 
 	@Column({
 		type: "enum",
@@ -37,9 +37,9 @@ export class Group {
 		type: "enum",
 		enum: Privacy,
 		default: Privacy.Everyone,
-		name: "members_privacy"
+		name: "member_privacy"
 	})
-	membersPrivacy: Privacy;
+	memberPrivacy: Privacy;
 
 	@Column({
 		nullable: true
@@ -50,11 +50,14 @@ export class Group {
 	/**
 	 * Relations
 	 */
-	@OneToOne(() => Group)
+	@ManyToOne(() => Group, group => group.children)
 	@JoinColumn({
 		name: "parent_group_id"
 	})
 	parent: Group;
+
+	@OneToMany(() => Group, group => group.parent)
+	children: Group[];
 
 	@OneToOne(() => GroupRule, {
 		cascade: true
@@ -64,7 +67,7 @@ export class Group {
 	})
 	rule: GroupRule;
 
-	@OneToOne(() => User)
+	@ManyToOne(() => User, user => user.groups)
 	@JoinColumn({
 		name: "owner_user_id"
 	})
