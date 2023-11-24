@@ -9,6 +9,10 @@ import { Privacy } from "../../entity";
 import { goodRequest } from "../../lib/response";
 import { GroupRule } from "../../entity/group/group_rule.entity";
 import { userRepo } from "../user";
+import { addUserToGroup, toggleAdmin } from "./static";
+import { Post } from "../../entity/post/post.entity";
+import { categoryRepo } from "../misc/category";
+import { postRepo } from "../post";
 
 export const groupRepo = Database.getRepository(Group)
 export const groupRulrepo = Database.getRepository(GroupRule)
@@ -89,33 +93,100 @@ class GroupController {
 		const group = res.locals.group as Group
 
 		// sub is array of user.sub
-		const { sub } = matchedData(req)
+		const { users } = matchedData(req)
 
-		for await (const s of sub) {
+		for await (const sub of users) {
 			const user = await userRepo.findOneBy({ sub })
 
 			if (user) {
-				await groupMemberRepo.insert({
-					group: group.id,
-					user: user.sub,
-				})
+				try {
+					await groupMemberRepo.insert({
+						group: group.id,
+						user: user.sub,
+					})
+				} catch {}
 			}
 		}
 		
 		goodRequest(res)
 	} // add member as admin
+
+	async removeMembersAsAdmin(req: Request, res: Response) {
+		const result = validationResult(req)
+		if (!result.isEmpty()) throw new BadFields()
+
+		const group = res.locals.group as Group
+
+		// sub is array of user.sub
+		const { users } = matchedData(req)
+
+		for await (const sub of users) {
+			const user = await userRepo.findOneBy({ sub })
+
+			if (user) {
+				try {
+					await groupMemberRepo.delete({
+						group: group.id,
+						user: user.sub,
+					})
+				} catch {}
+			}
+		}
+
+		goodRequest(res)
+	}
+
+	async promoteMembersAsAdmin(req: Request, res: Response) {
+		const result = validationResult(req)
+		if (!result.isEmpty()) throw new BadFields()
+
+		const group = res.locals.group as Group
+
+		// sub is array of user.sub
+		const { users } = matchedData(req)
+
+		for await (const sub of users) {
+			const user = await userRepo.findOneBy({ sub })
+
+			if (user) {
+				await toggleAdmin(group.id, user.sub, true)
+			}
+		}
+
+		goodRequest(res)
+	}
+
+	async demoteMembersAsAdmin(req: Request, res: Response) {
+		const result = validationResult(req)
+		if (!result.isEmpty()) throw new BadFields()
+
+		const group = res.locals.group as Group
+
+		// sub is array of user.sub
+		const { users } = matchedData(req)
+
+		for await (const sub of users) {
+			const user = await userRepo.findOneBy({ sub })
+
+			if (user) {
+				await toggleAdmin(group.id, user.sub, false)
+			}
+		}
+
+		goodRequest(res)
+	}
 	
-	// async joinGroup(req: Request, res: Response) {
-	// 	const result = validationResult(req)
-	// 	if (!result.isEmpty()) throw new BadFields()
+	async joinGroup(req: Request, res: Response) {
+		const result = validationResult(req)
+		if (!result.isEmpty()) throw new BadFields()
 
-	// 	const user = res.locals.user as User
-	// 	const { group_id } = matchedData(req)
+		const user = res.locals.user as User
+		const { group_id } = matchedData(req)
 
-	// 	const joinedGroups = addUserToGroup(user, group_id)
+		const joinedGroups = await addUserToGroup(user, group_id)
 
-	// 	goodRequest(res, { joinedGroups })
-	// }
+		goodRequest(res, { joinedGroups })
+	}
 
 	// async getMyGroups(req: Request, res: Response) {
 	// 	const user = res.locals.user as User
@@ -148,46 +219,56 @@ class GroupController {
 	// 	goodRequest(res)
 	// }
 
-	// async postToGroup(req: Request, res: Response) {
-	// 	const user = res.locals.user as User
-	// 	const group = res.locals.group as Group
-	// 	const result = validationResult(req)
-	// 	if (!result.isEmpty()) throw new BadFields(result)
+	async postToGroup(req: Request, res: Response) {
+		const result = validationResult(req)
+		if (!result.isEmpty()) throw new BadFields(result)
+
+		const user = res.locals.user as User
+		const group = res.locals.group as Group
 		
-	// 	const { text, category_id } = matchedData(req)
+		const { text, category_id } = matchedData(req)
 
-	// 	const post = new Post()
-	// 	post.textContent = text
-	// 	post.imageContents = []
-	// 	post.audioContents = []
-	// 	post.videoContents = []
-	// 	post.user = user
-	// 	post.location = res.locals.location
-	// 	post.group = group
+		// check if user is member of group
+		const member = await groupMemberRepo.findOneBy({
+			user: user.sub,
+			group: group.id
+		})
 
-	// 	if (category_id) {
-	// 		const category = await categoryRepo.findOneBy({ id: category_id })
-	// 		if (category)
-	// 			post.category = category
-	// 	}
+		if (!member) throw new Error("User is not a member of the group")
 
-	// 	// files
-	// 	if (req.files) {
-	// 		const { image, audio, video }: {
-	// 			image: Express.Multer.File[],
-	// 			audio: Express.Multer.File[],
-	// 			video: Express.Multer.File[],
-	// 		} = req.files as any
 
-	// 		if (image) image.forEach(file => post.imageContents.push(file.filename))
-	// 		if (audio) audio.forEach(file => post.audioContents.push(file.filename))
-	// 		if (video) video.forEach(file => post.videoContents.push(file.filename))
-	// 	}
+		const post = new Post()
+		post.textContent = text
+		post.imageContents = []
+		post.audioContents = []
+		post.videoContents = []
+		post.user = user
+		post.location = res.locals.location
+		post.group = group
 
-	// 	await postRepo.save(post)
+		if (category_id) {
+			const category = await categoryRepo.findOneBy({ id: category_id })
+			if (category)
+				post.category = category
+		}
 
-	// 	goodRequest(res)
-	// }
+		// files
+		if (req.files) {
+			const { image, audio, video }: {
+				image: Express.Multer.File[],
+				audio: Express.Multer.File[],
+				video: Express.Multer.File[],
+			} = req.files as any
+
+			if (image) image.forEach(file => post.imageContents.push(file.filename))
+			if (audio) audio.forEach(file => post.audioContents.push(file.filename))
+			if (video) video.forEach(file => post.videoContents.push(file.filename))
+		}
+
+		await postRepo.save(post)
+
+		goodRequest(res)
+	}
 }
 
 export default new GroupController()

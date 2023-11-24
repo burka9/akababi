@@ -3,7 +3,7 @@ import { User } from "../entity/user/user.entity";
 import logger from "../lib/logger";
 import { Group } from "../entity/group/group.entity";
 import { NoItem, error } from "../lib/errors";
-import { groupRepo } from "../controller/group";
+import { groupMemberRepo, groupRepo } from "../controller/group";
 
 const fetchGroup = async (groupId: number): Promise<Group> => {
 	const group = await groupRepo
@@ -45,7 +45,9 @@ export const IncludeGroupAndValidateOwner = async (req: Request, res: Response, 
 		const groupId = Number(req.query.group_id) || Number(req.params.group_id) || Number(req.body.group_id)
 		const group = await fetchGroup(groupId)
 
-		const isAdmin = (group.owner.sub === user.sub)
+		const isAdmin = await groupMemberRepo.findOne({
+			where: { group: group.id, user: user.sub, isAdmin: true }
+		})
 		
 		if (!isAdmin) throw new error("Group does not belong to user")
 		

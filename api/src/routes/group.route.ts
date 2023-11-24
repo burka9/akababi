@@ -6,6 +6,7 @@ import { upload } from "../lib/file_upload";
 import { checkSchema } from "express-validator";
 import { IncludeUser } from "../middleware/include_user";
 import group from "../controller/group";
+import { IncludeGroup, IncludeGroupAndValidateOwner } from "../middleware/include_group";
 
 export default class GroupRoute extends RouteConfig {
 
@@ -56,5 +57,40 @@ export default class GroupRoute extends RouteConfig {
 				state: { optional: true, isJSON: true },
 				city: { optional: true, isJSON: true },
 			}), IncludeUser, group.createGroup)
+
+		this.router.route("/my-group/add-user")
+			.post(jwtCheck, IncludeUser, IncludeGroupAndValidateOwner, checkSchema({
+				users: { optional: false },
+			}), group.addMembersAsAdmin)
+
+		this.router.route("/my-group/remove-user")
+			.delete(jwtCheck, IncludeUser, IncludeGroupAndValidateOwner, checkSchema({
+				users: { optional: false },
+			}), group.removeMembersAsAdmin)
+
+		this.router.route("/my-group/make-admin")
+			.post(jwtCheck, IncludeUser, IncludeGroupAndValidateOwner, checkSchema({
+				users: { optional: false },
+			}), group.promoteMembersAsAdmin)
+
+		this.router.route("/my-group/remove-admin")
+			.delete(jwtCheck, IncludeUser, IncludeGroupAndValidateOwner, checkSchema({
+				users: { optional: false },
+			}), group.demoteMembersAsAdmin)
+
+		this.router.route("/join-group")
+			.post(jwtCheck, IncludeUser, IncludeGroup, checkSchema({
+				group_id: { optional: false, isNumeric: true },
+			}), group.joinGroup)
+
+		this.router.route("/post")
+			.post(jwtCheck, upload.fields([
+				{ name: 'image', maxCount: 10 },
+				{ name: 'audio', maxCount: 10 },
+				{ name: 'video', maxCount: 10 },
+			]), checkSchema({
+				text: { optional: true, isString: true, escape: true },
+				category_id: { optional: true, isNumeric: true, escape: true },
+			}), IncludeUser, IncludeGroup, group.postToGroup)
 	}
 }
