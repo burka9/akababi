@@ -2,8 +2,7 @@ version: '3.7'
 
 services:
   akababi-db:
-    # image: mysql:8.0.31
-    image: mysql:latest
+    image: mysql:8.0.31
     container_name: akababi-db
     restart: always
     environment:
