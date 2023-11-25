@@ -17,7 +17,7 @@ jobs:
         name: Docker build and push
         with:
           image: burka9/akababi-api
-          tags: v1
+          tags: latest
           registry: docker.io
           directory: api
           dockerfile: api/Dockerfile

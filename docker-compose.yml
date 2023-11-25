@@ -1,0 +1,39 @@
+version: '3.7'
+
+services:
+  akababi-db:
+    # image: mysql:8.0.31
+    image: mysql:latest
+    container_name: akababi-db
+    restart: always
+    environment:
+      MYSQL_DATABASE: akababi
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    env_file:
+      - .env
+    ports:
+      - 3307:3306
+    volumes:
+      - ./db:/var/lib/mysql
+    hostname: akababi-db
+    networks:
+      - akababi-network
+
+  akababi-api:
+    image: burka9/akababi-api:v1
+    container_name: akababi-api
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - 3000:5000
+    volumes:
+      - ./api:/app
+    depends_on:
+      - akababi-db
+    hostname: akababi-api
+    networks:
+      - akababi-network
+
+networks:
+  akababi-network:
