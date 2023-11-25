@@ -10,7 +10,7 @@ services:
       MYSQL_DATABASE: akababi
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
     env_file:
-      - ./api/env
+      - ./api/.env
     ports:
       - 3307:3306
     volumes:
