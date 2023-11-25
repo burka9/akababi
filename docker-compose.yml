@@ -20,13 +20,15 @@ services:
       - akababi-network
 
   akababi-api:
-    image: burka9/akababi-api:v1
+    build:
+      context: ./api
+      dockerfile: Dockerfile
     container_name: akababi-api
     restart: always
     env_file:
-      - .env
+      - api/.env
     ports:
-      - 3000:5000
+      - 3000:3000
     volumes:
       - ./api:/app
     depends_on:
