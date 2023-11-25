@@ -8,6 +8,7 @@ import { resolve } from "path";
 import admin from "firebase-admin";
 import { NotificationType } from "../../entity";
 import { generateNotificationText } from "../../controller/notification/static";
+import { PATH } from "../../lib/env";
 
 export default function sendNotification(user: User, notification: Notification) {
 	logger.debug(`sending notification: ${notification.id}`)
@@ -25,7 +26,7 @@ export default function sendNotification(user: User, notification: Notification)
 	}
 }
 
-const serviceAccount = readFileSync(resolve('private/serviceAccount.json'))
+const serviceAccount = readFileSync(resolve(PATH.CUSTOM, "serviceAccount.json"))
 
 const firebaseAdmin = admin.initializeApp({
 	credential: admin.credential.cert(JSON.parse(serviceAccount.toString())),

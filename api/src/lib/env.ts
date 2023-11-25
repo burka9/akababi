@@ -100,3 +100,8 @@ export const SEED = {
 	STATE: (process.env.ROOT_SEED_DIR || "") + (process.env.STATE_SEED_FILE || ""),
 	CITY: (process.env.ROOT_SEED_DIR || "") + (process.env.CITY_SEED_FILE || ""),
 }
+
+export const PATH = {
+	UPLOAD: process.env.UPLOAD_PATH || "uploads",
+	CUSTOM: process.env.CUSTOM_PATH || "private",
+}

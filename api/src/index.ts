@@ -4,7 +4,7 @@ import helmet from 'helmet'
 import { createServer } from 'http'
 import morgan from 'morgan'
 import cors from 'cors'
-import { DATABASE, DEVELOPMENT, SERVER } from './lib/env'
+import { DATABASE, DEVELOPMENT, PATH, SERVER } from './lib/env'
 import logger from './lib/logger'
 import { RouteConfig } from './lib/route.config'
 import { errorHandler } from './middleware/error_handler'
@@ -107,9 +107,13 @@ const SERVER_ERROR = (err: any) => {
 }
 
 
+const pathInit = (path: string) => {
+	!existsSync(path) && mkdirSync(path)
+}
+
 const uploadInit = () => {
-	DEVELOPMENT && DATABASE.DROP_SCHEMA && existsSync('uploads') && rmSync('uploads', { recursive: true })
-	!existsSync('uploads') && mkdirSync('uploads')
+	DEVELOPMENT && DATABASE.DROP_SCHEMA && existsSync(PATH.UPLOAD) && rmSync(PATH.UPLOAD, { recursive: true })
+	pathInit(PATH.UPLOAD)
 }
 
 
@@ -119,6 +123,7 @@ Database.initialize()
 		logger.info('database connected')
 
 		uploadInit()
+		pathInit(PATH.CUSTOM)
 
 		loadData()
 

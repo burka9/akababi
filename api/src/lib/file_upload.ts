@@ -1,9 +1,10 @@
 import multer from "multer"
 import { v4 as uuid } from "uuid"
+import { PATH } from "./env"
 
 const storage = multer.diskStorage({
 	destination: function(req, file, cb) {
-		cb(null, `uploads`)
+		cb(null, PATH.UPLOAD)
 	},
 	filename: function (req, file, cb) {
     const name = uuid()
