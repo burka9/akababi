@@ -76,7 +76,7 @@ class PostController {
 
 		await postRepo.save(post)
 
-		goodRequest(res)
+		goodRequest(res, { id: post.id })
 	}
 
 	async sharePost(req: Request, res: Response) {
